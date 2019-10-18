@@ -267,7 +267,10 @@ func parseHost(hostish string) (host string, err error) {
 	if iphost := parseIPAddress(host); iphost != "" {
 		host = iphost
 	} else {
-		host, _ = recursiveUnescape(host)
+		host, err = recursiveUnescape(host)
+		if err != nil {
+			return "", err
+		}
 		var temp_host bytes.Buffer
 		for _, c := range []byte(host) {
 			if (c >= 0x41 && c <=0x5A) || (c >= 0x61 && c <= 0x7A) {
