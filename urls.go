@@ -267,10 +267,13 @@ func parseHost(hostish string) (host string, err error) {
 	if iphost := parseIPAddress(host); iphost != "" {
 		host = iphost
 	} else {
+		// In order to properly escape urls, first get the unescaped
+		// version.
 		host, err = recursiveUnescape(host)
 		if err != nil {
 			return "", err
 		}
+		// Then apply a to lower but only to ascii characters [a-z|A-Z].
 		var temp_host bytes.Buffer
 		for _, c := range []byte(host) {
 			if (c >= 0x41 && c <=0x5A) || (c >= 0x61 && c <= 0x7A) {
@@ -280,6 +283,8 @@ func parseHost(hostish string) (host string, err error) {
 			}
 		}
 		host = temp_host.String()
+
+		// Then escape the result.
 		host = escape(host)
 	}
 	return host, nil
