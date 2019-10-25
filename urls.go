@@ -44,6 +44,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"golang.org/x/net/idna"
 )
@@ -161,7 +162,7 @@ func escape(s string) string {
 	var b bytes.Buffer
 	for _, c := range []byte(s) {
 		if c < 0x20 || c >= 0x7f || c == ' ' || c == '#' || c == '%' {
-			b.WriteString(fmt.Sprintf("%%%02x", c))
+			b.WriteString(fmt.Sprintf("%%%02X", c))
 		} else {
 			b.WriteByte(c)
 		}
@@ -266,7 +267,25 @@ func parseHost(hostish string) (host string, err error) {
 	if iphost := parseIPAddress(host); iphost != "" {
 		host = iphost
 	} else {
-		host = strings.ToLower(host)
+		// In order to properly escape urls, first get the unescaped
+		// version.
+		host, err = recursiveUnescape(host)
+		if err != nil {
+			return "", err
+		}
+		// Then apply a to lower but only to ascii characters [a-z|A-Z].
+		var temp_host bytes.Buffer
+		for _, c := range []byte(host) {
+			if (c >= 0x41 && c <=0x5A) || (c >= 0x61 && c <= 0x7A) {
+				temp_host.WriteByte(byte(unicode.ToLower(rune(c))))
+			} else {
+				temp_host.WriteByte(c)
+			}
+		}
+		host = temp_host.String()
+
+		// Then escape the result.
+		host = escape(host)
 	}
 	return host, nil
 }

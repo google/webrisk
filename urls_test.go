@@ -295,7 +295,7 @@ func TestCanonicalURL(t *testing.T) {
 		{"%20leadingspace.com/", "http://%20leadingspace.com/", false},
 		{"https://www.securesite.com/", "https://www.securesite.com/", false},
 		{"ftp://ftp.myfiles.com/", "ftp://ftp.myfiles.com/", false},
-		{"http://some%1bhost.com/%1b", "http://some%1bhost.com/%1b", false},
+		{"http://some%1bhost.com/%1b", "http://some%1Bhost.com/%1B", false},
 		{"  http://www.google.com/  ", "http://www.google.com/", false},
 		{"http://www.google.com/q?r?s%3F", "http://www.google.com/q", false},
 		{"http://www.\xC3\xBcmlat.com/", "http://www.xn--mlat-zra.com/", false},
@@ -303,6 +303,7 @@ func TestCanonicalURL(t *testing.T) {
 		{"http%3A%2F%2Fwackyurl.com:80/", "http://wackyurl.com/", false},
 		{"http://W!eird<>Ho$^.com/", "http://w!eird<>ho$^.com/", false},
 		{"http://i.have.way.too.many.dots.com/", "http://i.have.way.too.many.dots.com/", false},
+		{"http://g\xD0\xBE\xD0\xBEgle.com/", "http://xn--ggle-55da.com/", false}, // Cyrillic o.
 
 		// All of these cases are missing a valid hostname and should return empty
 		{"", "", true},
