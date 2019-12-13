@@ -447,7 +447,7 @@ func (sb *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 
 	for _, req := range reqs {
 		// Actually query the Web Risk API for exact full hash matches.
-		resp, err := sb.api.HashLookup(ctx, req)
+		resp, err := sb.api.HashLookup(ctx, req.HashPrefix, req.ThreatTypes)
 		if err != nil {
 			sb.log.Printf("HashLookup failure: %v", err)
 			atomic.AddInt64(&sb.stats.QueriesFail, 1)

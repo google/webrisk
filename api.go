@@ -14,8 +14,8 @@
 package webrisk
 
 import (
-	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,17 +24,23 @@ import (
 
 	pb "github.com/google/webrisk/internal/webrisk_proto"
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 const (
-	findHashPath    = "/$rpc/google.cloud.webrisk.v1beta1.WebRiskServiceV1Beta1/SearchHashes"
-	fetchUpdatePath = "/$rpc/google.cloud.webrisk.v1beta1.WebRiskServiceV1Beta1/ComputeThreatListDiff"
+	findHashPath    = "v1beta1/hashes:search"
+	fetchUpdatePath = "v1beta1/threatLists:computeDiff"
+	threatTypeString = "threat_type"
+	versionTokenString = "version_token"
+	supportedCompressionsString = "constraints.supported_compressions"
+	hashPrefixString = "hash_prefix"
+	threatTypesString = "threat_types"
 )
 
 // The api interface specifies wrappers around the Web Risk API.
 type api interface {
-	ListUpdate(ctx context.Context, req *pb.ComputeThreatListDiffRequest) (*pb.ComputeThreatListDiffResponse, error)
-	HashLookup(ctx context.Context, req *pb.SearchHashesRequest) (*pb.SearchHashesResponse, error)
+	ListUpdate(ctx context.Context, threat_type pb.ThreatType, version_token []byte, compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error)
+	HashLookup(ctx context.Context, hashPrefix []byte, threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error)
 }
 
 // netAPI is an api object that talks to the server over HTTP.
@@ -68,24 +74,15 @@ func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
 
 	q := u.Query()
 	q.Set("key", key)
-	q.Set("alt", "proto")
 	u.RawQuery = q.Encode()
 	return &netAPI{url: u, client: httpClient}, nil
 }
 
-// doRequests performs a POST to requestPath. It uses the marshaled form of req
-// as the request body payload, and automatically unmarshals the response body
-// payload as resp.
-func (a *netAPI) doRequest(ctx context.Context, requestPath string, req proto.Message, resp proto.Message) error {
-	p, err := proto.Marshal(req)
-	if err != nil {
-		return err
-	}
-
-	u := *a.url // Make a copy of URL
-	u.Path = requestPath
-	httpReq, err := http.NewRequest("POST", u.String(), bytes.NewReader(p))
-	httpReq.Header.Add("Content-Type", "application/x-protobuf")
+// doRequests performs a GET to requestPath. It automatically unmarshals the
+// response body payload as resp.
+func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Message) error {
+	httpReq, err := http.NewRequest("GET", urlString, nil)
+	httpReq.Header.Add("Content-Type", "application/json")
 	httpReq.Header.Add("User-Agent", "Webrisk-Client/0.1.2")
 	httpReq = httpReq.WithContext(ctx)
 	httpResp, err := a.client.Do(httpReq)
@@ -100,17 +97,38 @@ func (a *netAPI) doRequest(ctx context.Context, requestPath string, req proto.Me
 	if err != nil {
 		return err
 	}
-	return proto.Unmarshal(body, resp)
+	return jsonpb.UnmarshalString(string(body), resp)
 }
 
 // ListUpdate issues a ComputeThreatListDiff API call and returns the response.
-func (a *netAPI) ListUpdate(ctx context.Context, req *pb.ComputeThreatListDiffRequest) (*pb.ComputeThreatListDiffResponse, error) {
+func (a *netAPI) ListUpdate(ctx context.Context, threatType pb.ThreatType, versionToken []byte, compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
 	resp := new(pb.ComputeThreatListDiffResponse)
-	return resp, a.doRequest(ctx, fetchUpdatePath, req, resp)
+	u := *a.url // Make a copy of URL
+	// Add fields from ComputeThreatListDiffRequest to URL request
+	q := u.Query()
+	q.Set(threatTypeString, threatType.String())
+	if string(versionToken) != "" {
+		q.Set(versionTokenString, string(versionToken))
+	}
+	for _, compressionType := range compressionTypes {
+		q.Add(supportedCompressionsString, compressionType.String())
+	}
+	u.RawQuery = q.Encode()
+	u.Path = fetchUpdatePath
+	return resp, a.doRequest(ctx, u.String(), resp)
 }
 
 // HashLookup issues a SearchHashes API call and returns the response.
-func (a *netAPI) HashLookup(ctx context.Context, req *pb.SearchHashesRequest) (*pb.SearchHashesResponse, error) {
+func (a *netAPI) HashLookup(ctx context.Context, hashPrefix []byte, threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error) {
 	resp := new(pb.SearchHashesResponse)
-	return resp, a.doRequest(ctx, findHashPath, req, resp)
+	u := *a.url // Make a copy of URL
+	// Add fields from SearchHashesRequest to URL request
+	q := u.Query()
+	q.Set(hashPrefixString, base64.StdEncoding.EncodeToString(hashPrefix))
+	for _, threatType := range threatTypes {
+		q.Add(threatTypesString, threatType.String())
+	}
+	u.RawQuery = q.Encode()
+	u.Path = findHashPath
+	return resp, a.doRequest(ctx, u.String(), resp)
 }
