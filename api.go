@@ -83,7 +83,7 @@ func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
 func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Message) error {
 	httpReq, err := http.NewRequest("GET", urlString, nil)
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("User-Agent", "Webrisk-Client/0.1.2")
+	httpReq.Header.Add("User-Agent", "Webrisk-Client/0.1.3")
 	httpReq = httpReq.WithContext(ctx)
 	httpResp, err := a.client.Do(httpReq)
 	if err != nil {
