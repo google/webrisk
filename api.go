@@ -39,8 +39,10 @@ const (
 
 // The api interface specifies wrappers around the Web Risk API.
 type api interface {
-	ListUpdate(ctx context.Context, threat_type pb.ThreatType, version_token []byte, compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error)
-	HashLookup(ctx context.Context, hashPrefix []byte, threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error)
+	ListUpdate(ctx context.Context, threat_type pb.ThreatType, version_token []byte,
+		compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error)
+	HashLookup(ctx context.Context, hashPrefix []byte,
+		threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error)
 }
 
 // netAPI is an api object that talks to the server over HTTP.
@@ -101,7 +103,8 @@ func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Mes
 }
 
 // ListUpdate issues a ComputeThreatListDiff API call and returns the response.
-func (a *netAPI) ListUpdate(ctx context.Context, threatType pb.ThreatType, versionToken []byte, compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
+func (a *netAPI) ListUpdate(ctx context.Context, threatType pb.ThreatType, versionToken []byte,
+	compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
 	resp := new(pb.ComputeThreatListDiffResponse)
 	u := *a.url // Make a copy of URL
 	// Add fields from ComputeThreatListDiffRequest to URL request
@@ -119,7 +122,8 @@ func (a *netAPI) ListUpdate(ctx context.Context, threatType pb.ThreatType, versi
 }
 
 // HashLookup issues a SearchHashes API call and returns the response.
-func (a *netAPI) HashLookup(ctx context.Context, hashPrefix []byte, threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error) {
+func (a *netAPI) HashLookup(ctx context.Context, hashPrefix []byte,
+	threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error) {
 	resp := new(pb.SearchHashesResponse)
 	u := *a.url // Make a copy of URL
 	// Add fields from SearchHashesRequest to URL request

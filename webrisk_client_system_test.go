@@ -42,7 +42,8 @@ func TestNetworkAPIUpdate(t *testing.T) {
 		ThreatType: pb.ThreatType_MALWARE,
 	}
 
-	dat, err := nm.ListUpdate(context.Background(), req)
+	dat, err := nm.ListUpdate(context.Background(), req.ThreatType,
+		req.VersionToken, req.Constraints.SupportedCompressions)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +58,8 @@ func TestNetworkAPIUpdate(t *testing.T) {
 			ThreatTypes: []pb.ThreatType{pb.ThreatType_MALWARE},
 			HashPrefix:  []byte(hash),
 		}
-		fullHashResp, err := nm.HashLookup(context.Background(), fullHashReq)
+		fullHashResp, err := nm.HashLookup(context.Background(),
+			fullHashReq.HashPrefix, fullHashReq.ThreatTypes)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -86,7 +88,8 @@ func TestNetworkAPILookup(t *testing.T) {
 		ThreatTypes: []pb.ThreatType{c.ThreatType},
 		HashPrefix:  []byte(hash[:minHashPrefixLength]),
 	}
-	resp, err := nm.HashLookup(context.Background(), req)
+	resp, err := nm.HashLookup(context.Background(), req.HashPrefix,
+		req.ThreatTypes)
 	if err != nil {
 		t.Fatalf("Lookup failed: %v", err)
 	}
