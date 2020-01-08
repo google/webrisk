@@ -86,8 +86,8 @@ $ echo "http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/" | w
 
 # WebRisk System Test
 To perform an end-to-end test on the package with the WebRisk backend,
-run the following command:
+run the following command after exporting your API key:
 
 ```
-go test github.com/google/webrisk -v -run TestWebriskClient -apikey $APIKEY
+go test github.com/google/webrisk -v -run TestWebriskClient
 ```
