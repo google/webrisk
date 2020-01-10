@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	findHashPath    = "v1beta1/hashes:search"
-	fetchUpdatePath = "v1beta1/threatLists:computeDiff"
+	findHashPath    = "v1/hashes:search"
+	fetchUpdatePath = "v1/threatLists:computeDiff"
 	threatTypeString = "threat_type"
 	versionTokenString = "version_token"
 	supportedCompressionsString = "constraints.supported_compressions"
