@@ -26,7 +26,7 @@ import (
 // network requests against the Web Risk API servers. Thus, in order to
 // operate they need the user's API key. This can be specified using the -apikey
 // command-line flag when running the tests.
-var apiKey = os.Getenv("WEBRISK_APIKEY")
+var apiKey = os.Getenv("APIKEY")
 
 func TestNetworkAPIUpdate(t *testing.T) {
 	if apiKey == "" {
@@ -119,7 +119,7 @@ func TestWebriskClient(t *testing.T) {
 	}
 	cancel()
 
-	url := "http://testwebrisk | w.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
+	url := "http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
 
 	urls := []string{url, url + "?q=test"}
 	threats, e := sb.LookupURLs(urls)
