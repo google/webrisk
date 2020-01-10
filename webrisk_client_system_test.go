@@ -43,7 +43,7 @@ func TestNetworkAPIUpdate(t *testing.T) {
 	}
 
 	dat, err := nm.ListUpdate(context.Background(), req.ThreatType,
-		req.VersionToken, req.Constraints.SupportedCompressions)
+		req.VersionToken, []pb.CompressionType{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestNetworkAPILookup(t *testing.T) {
 	var c = pb.ComputeThreatListDiffRequest{
 		ThreatType: pb.ThreatType_MALWARE,
 	}
-	url := "http://testwebrisk | w.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
+	url := "testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
 	hash := hashFromPattern(url)
 	req := &pb.SearchHashesRequest{
 		ThreatTypes: []pb.ThreatType{c.ThreatType},
