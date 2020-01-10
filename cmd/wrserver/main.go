@@ -209,7 +209,7 @@ import (
 
 const (
 	statusPath     = "/status"
-	findThreatPath = "/v1beta1/uris:search"
+	findThreatPath = "/v1/uris:search"
 	redirectPath   = "/r"
 )
 
