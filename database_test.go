@@ -328,7 +328,7 @@ func TestDatabaseUpdate(t *testing.T) {
 	var resp pb.ComputeThreatListDiffResponse
 	var errResponse error
 	mockAPI := &mockAPI{
-		listUpdate: func(context.Context, pb.ThreatType, []byte, []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
+		listUpdate: func(context.Context, *pb.ComputeThreatListDiffRequest) (*pb.ComputeThreatListDiffResponse, error) {
 			return &resp, errResponse
 		},
 	}

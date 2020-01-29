@@ -213,7 +213,7 @@ func (db *database) Update(ctx context.Context, api api) (time.Duration, bool) {
 	last := db.config.now()
 	for _, req := range s {
 		// Query the API for the threat list and update the database.
-		resp, err := api.ListUpdate(ctx, req.ThreatType, req.VersionToken, req.Constraints.SupportedCompressions)
+		resp, err := api.ListUpdate(ctx, req)
 		if err != nil {
 			db.log.Printf("ListUpdate failure (%d): %v", db.updateAPIErrors+1, err)
 			db.setError(err)

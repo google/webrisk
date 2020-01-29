@@ -9,7 +9,7 @@ redirector to redirect users to a warning page for unsafe URLs. The `wrlookup`
 program is a command line service that can also be used to check URLs.
 
 This **README.md** is a quickstart guide on how to build, deploy, and use the
-WebRisk Go package. It can be used out-of-the-box. The GoDoc and API
+`[WebRisk](https://godoc.org/cloud.google.com/go/webrisk/apiv1beta1)` Go package. It can be used out-of-the-box. The GoDoc and API
 documentation provide more details on fine tuning the parameters if desired.
 
 
@@ -86,8 +86,8 @@ $ echo "http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/" | w
 
 # WebRisk System Test
 To perform an end-to-end test on the package with the WebRisk backend,
-run the following command after exporting your API key:
+run the following command:
 
 ```
-go test github.com/google/webrisk -v -run TestWebriskClient
+go test github.com/google/webrisk -v -run TestWebriskClient -apikey $APIKEY
 ```

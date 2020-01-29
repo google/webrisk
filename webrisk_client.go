@@ -263,7 +263,7 @@ func NewWebriskClient(conf Config) (*WebriskClient, error) {
 	if conf.now == nil {
 		conf.now = time.Now
 	}
-	wr := &WebriskClient{
+	sb := &WebriskClient{
 		config: conf,
 		api:    conf.api,
 		c:      cache{now: conf.now},
@@ -273,9 +273,9 @@ func NewWebriskClient(conf Config) (*WebriskClient, error) {
 	// by "/v4/threatLists" API endpoint.
 
 	// Convert threat lists slice to a map for O(1) lookup.
-	wr.lists = make(map[ThreatType]bool)
+	sb.lists = make(map[ThreatType]bool)
 	for _, td := range conf.ThreatLists {
-		wr.lists[td] = true
+		sb.lists[td] = true
 	}
 
 	// Setup the logger.
@@ -283,54 +283,54 @@ func NewWebriskClient(conf Config) (*WebriskClient, error) {
 	if conf.Logger == nil {
 		w = ioutil.Discard
 	}
-	wr.log = log.New(w, "webrisk: ", log.Ldate|log.Ltime|log.Lshortfile)
+	sb.log = log.New(w, "webrisk: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	delay := time.Duration(0)
 	// If database file is provided, use that to initialize.
-	if !wr.db.Init(&wr.config, wr.log) {
-		ctx, cancel := context.WithTimeout(context.Background(), wr.config.RequestTimeout)
-		delay, _ = wr.db.Update(ctx, wr.api)
+	if !sb.db.Init(&sb.config, sb.log) {
+		ctx, cancel := context.WithTimeout(context.Background(), sb.config.RequestTimeout)
+		delay, _ = sb.db.Update(ctx, sb.api)
 		cancel()
 	} else {
-		if age := wr.db.SinceLastUpdate(); age < wr.config.UpdatePeriod {
-			delay = wr.config.UpdatePeriod - age
+		if age := sb.db.SinceLastUpdate(); age < sb.config.UpdatePeriod {
+			delay = sb.config.UpdatePeriod - age
 		}
 	}
 
 	// Start the background list updater.
-	wr.done = make(chan bool)
-	go wr.updater(delay)
-	return wr, nil
+	sb.done = make(chan bool)
+	go sb.updater(delay)
+	return sb, nil
 }
 
 // Status reports the status of WebriskClient. It returns some statistics
 // regarding the operation, and an error representing the status of its
 // internal state. Most errors are transient and will recover themselves
 // after some period.
-func (wr *WebriskClient) Status() (Stats, error) {
+func (sb *WebriskClient) Status() (Stats, error) {
 	stats := Stats{
-		QueriesByDatabase: atomic.LoadInt64(&wr.stats.QueriesByDatabase),
-		QueriesByCache:    atomic.LoadInt64(&wr.stats.QueriesByCache),
-		QueriesByAPI:      atomic.LoadInt64(&wr.stats.QueriesByAPI),
-		QueriesFail:       atomic.LoadInt64(&wr.stats.QueriesFail),
-		DatabaseUpdateLag: wr.db.UpdateLag(),
+		QueriesByDatabase: atomic.LoadInt64(&sb.stats.QueriesByDatabase),
+		QueriesByCache:    atomic.LoadInt64(&sb.stats.QueriesByCache),
+		QueriesByAPI:      atomic.LoadInt64(&sb.stats.QueriesByAPI),
+		QueriesFail:       atomic.LoadInt64(&sb.stats.QueriesFail),
+		DatabaseUpdateLag: sb.db.UpdateLag(),
 	}
-	return stats, wr.db.Status()
+	return stats, sb.db.Status()
 }
 
 // WaitUntilReady blocks until the database is not in an error state.
 // Returns nil when the database is ready. Returns an error if the provided
 // context is canceled or if the WebriskClient instance is Closed.
-func (wr *WebriskClient) WaitUntilReady(ctx context.Context) error {
-	if atomic.LoadUint32(&wr.closed) == 1 {
+func (sb *WebriskClient) WaitUntilReady(ctx context.Context) error {
+	if atomic.LoadUint32(&sb.closed) == 1 {
 		return errClosed
 	}
 	select {
-	case <-wr.db.Ready():
+	case <-sb.db.Ready():
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
-	case <-wr.done:
+	case <-sb.done:
 		return errClosed
 	}
 }
@@ -349,8 +349,8 @@ func (wr *WebriskClient) WaitUntilReady(ctx context.Context) error {
 //
 // If an error occurs, the caller should treat the threats list returned as a
 // best-effort response to the query. The results may be stale or be partial.
-func (wr *WebriskClient) LookupURLs(urls []string) (threats [][]URLThreat, err error) {
-	threats, err = wr.LookupURLsContext(context.Background(), urls)
+func (sb *WebriskClient) LookupURLs(urls []string) (threats [][]URLThreat, err error) {
+	threats, err = sb.LookupURLsContext(context.Background(), urls)
 	return threats, err
 }
 
@@ -359,18 +359,18 @@ func (wr *WebriskClient) LookupURLs(urls []string) (threats [][]URLThreat, err e
 // elapsed. It is safe to call this method concurrently.
 //
 // See LookupURLs for details on the returned results.
-func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (threats [][]URLThreat, err error) {
-	ctx, cancel := context.WithTimeout(ctx, wr.config.RequestTimeout)
+func (sb *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (threats [][]URLThreat, err error) {
+	ctx, cancel := context.WithTimeout(ctx, sb.config.RequestTimeout)
 	defer cancel()
 
 	threats = make([][]URLThreat, len(urls))
 
-	if atomic.LoadUint32(&wr.closed) != 0 {
+	if atomic.LoadUint32(&sb.closed) != 0 {
 		return threats, errClosed
 	}
-	if err := wr.db.Status(); err != nil {
-		wr.log.Printf("inconsistent database: %v", err)
-		atomic.AddInt64(&wr.stats.QueriesFail, int64(len(urls)))
+	if err := sb.db.Status(); err != nil {
+		sb.log.Printf("inconsistent database: %v", err)
+		atomic.AddInt64(&sb.stats.QueriesFail, int64(len(urls)))
 		return threats, err
 	}
 
@@ -385,8 +385,8 @@ func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 	for i, url := range urls {
 		urlhashes, err := generateHashes(url)
 		if err != nil {
-			wr.log.Printf("error generating urlhashes: %v", err)
-			atomic.AddInt64(&wr.stats.QueriesFail, int64(len(urls)-i))
+			sb.log.Printf("error generating urlhashes: %v", err)
+			atomic.AddInt64(&sb.stats.QueriesFail, int64(len(urls)-i))
 			return threats, err
 		}
 
@@ -396,14 +396,14 @@ func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 			hashes[fullHash] = pattern
 
 			// Lookup in database according to threat list.
-			partialHash, unsureThreats := wr.db.Lookup(fullHash)
+			partialHash, unsureThreats := sb.db.Lookup(fullHash)
 			if len(unsureThreats) == 0 {
-				atomic.AddInt64(&wr.stats.QueriesByDatabase, 1)
+				atomic.AddInt64(&sb.stats.QueriesByDatabase, 1)
 				continue // There are definitely no threats for this full hash
 			}
 
 			// Lookup in cache according to recently seen values.
-			cachedThreats, cr := wr.c.Lookup(fullHash)
+			cachedThreats, cr := sb.c.Lookup(fullHash)
 			switch cr {
 			case positiveCacheHit:
 				// The cache remembers this full hash as a threat.
@@ -417,10 +417,10 @@ func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 						})
 					}
 				}
-				atomic.AddInt64(&wr.stats.QueriesByCache, 1)
+				atomic.AddInt64(&sb.stats.QueriesByCache, 1)
 			case negativeCacheHit:
 				// This is cached as a non-threat.
-				atomic.AddInt64(&wr.stats.QueriesByCache, 1)
+				atomic.AddInt64(&sb.stats.QueriesByCache, 1)
 				continue
 			default:
 				// The cache knows nothing about this full hash, so we must make
@@ -447,15 +447,15 @@ func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 
 	for _, req := range reqs {
 		// Actually query the Web Risk API for exact full hash matches.
-		resp, err := wr.api.HashLookup(ctx, req.HashPrefix, req.ThreatTypes)
+		resp, err := sb.api.HashLookup(ctx, req)
 		if err != nil {
-			wr.log.Printf("HashLookup failure: %v", err)
-			atomic.AddInt64(&wr.stats.QueriesFail, 1)
+			sb.log.Printf("HashLookup failure: %v", err)
+			atomic.AddInt64(&sb.stats.QueriesFail, 1)
 			return threats, err
 		}
 
 		// Update the cache.
-		wr.c.Update(req, resp)
+		sb.c.Update(req, resp)
 
 		// Pull the information the client cares about out of the response.
 		for _, threat := range resp.GetThreats() {
@@ -467,7 +467,7 @@ func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 			idxs, findidx := hash2idxs[fullHash]
 			if findidx && ok {
 				for _, td := range threat.ThreatTypes {
-					if !wr.lists[ThreatType(td)] {
+					if !sb.lists[ThreatType(td)] {
 						continue
 					}
 					for _, idx := range idxs {
@@ -479,32 +479,32 @@ func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 				}
 			}
 		}
-		atomic.AddInt64(&wr.stats.QueriesByAPI, 1)
+		atomic.AddInt64(&sb.stats.QueriesByAPI, 1)
 	}
 	return threats, nil
 }
 
 // TODO: Add other types of lookup when available.
-//	func (wr *WebriskClient) LookupBinaries(digests []string) (threats []BinaryThreat, err error)
-//	func (wr *WebriskClient) LookupAddresses(addrs []string) (threats [][]AddressThreat, err error)
+//	func (sb *WebriskClient) LookupBinaries(digests []string) (threats []BinaryThreat, err error)
+//	func (sb *WebriskClient) LookupAddresses(addrs []string) (threats [][]AddressThreat, err error)
 
 // updater is a blocking method that periodically updates the local database.
 // This should be run as a separate goroutine and will be automatically stopped
-// when wr.Close is called.
-func (wr *WebriskClient) updater(delay time.Duration) {
+// when sb.Close is called.
+func (sb *WebriskClient) updater(delay time.Duration) {
 	for {
-		wr.log.Printf("Next update in %v", delay)
+		sb.log.Printf("Next update in %v", delay)
 		select {
 		case <-time.After(delay):
 			var ok bool
-			ctx, cancel := context.WithTimeout(context.Background(), wr.config.RequestTimeout)
-			if delay, ok = wr.db.Update(ctx, wr.api); ok {
-				wr.log.Printf("background threat list updated")
-				wr.c.Purge()
+			ctx, cancel := context.WithTimeout(context.Background(), sb.config.RequestTimeout)
+			if delay, ok = sb.db.Update(ctx, sb.api); ok {
+				sb.log.Printf("background threat list updated")
+				sb.c.Purge()
 			}
 			cancel()
 
-		case <-wr.done:
+		case <-sb.done:
 			return
 		}
 	}
@@ -512,10 +512,10 @@ func (wr *WebriskClient) updater(delay time.Duration) {
 
 // Close cleans up all resources.
 // This method must not be called concurrently with other lookup methods.
-func (wr *WebriskClient) Close() error {
-	if atomic.LoadUint32(&wr.closed) == 0 {
-		atomic.StoreUint32(&wr.closed, 1)
-		close(wr.done)
+func (sb *WebriskClient) Close() error {
+	if atomic.LoadUint32(&sb.closed) == 0 {
+		atomic.StoreUint32(&sb.closed, 1)
+		close(sb.done)
 	}
 	return nil
 }

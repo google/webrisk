@@ -26,7 +26,7 @@ import (
 // network requests against the Web Risk API servers. Thus, in order to
 // operate they need the user's API key. This can be specified using the -apikey
 // command-line flag when running the tests.
-var apiKey = os.Getenv("APIKEY")
+var apiKey = os.Getenv("WEBRISK_APIKEY")
 
 func TestNetworkAPIUpdate(t *testing.T) {
 	if apiKey == "" {
@@ -42,8 +42,7 @@ func TestNetworkAPIUpdate(t *testing.T) {
 		ThreatType: pb.ThreatType_MALWARE,
 	}
 
-	dat, err := nm.ListUpdate(context.Background(), req.ThreatType,
-		req.VersionToken, []pb.CompressionType{})
+	dat, err := nm.ListUpdate(context.Background(), req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,8 +57,7 @@ func TestNetworkAPIUpdate(t *testing.T) {
 			ThreatTypes: []pb.ThreatType{pb.ThreatType_MALWARE},
 			HashPrefix:  []byte(hash),
 		}
-		fullHashResp, err := nm.HashLookup(context.Background(),
-			fullHashReq.HashPrefix, fullHashReq.ThreatTypes)
+		fullHashResp, err := nm.HashLookup(context.Background(), fullHashReq)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -82,14 +80,13 @@ func TestNetworkAPILookup(t *testing.T) {
 	var c = pb.ComputeThreatListDiffRequest{
 		ThreatType: pb.ThreatType_MALWARE,
 	}
-	url := "testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
+	url := "http://testwebrisk | w.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
 	hash := hashFromPattern(url)
 	req := &pb.SearchHashesRequest{
 		ThreatTypes: []pb.ThreatType{c.ThreatType},
 		HashPrefix:  []byte(hash[:minHashPrefixLength]),
 	}
-	resp, err := nm.HashLookup(context.Background(), req.HashPrefix,
-		req.ThreatTypes)
+	resp, err := nm.HashLookup(context.Background(), req)
 	if err != nil {
 		t.Fatalf("Lookup failed: %v", err)
 	}
@@ -119,7 +116,7 @@ func TestWebriskClient(t *testing.T) {
 	}
 	cancel()
 
-	url := "http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
+	url := "http://testwebrisk | w.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/"
 
 	urls := []string{url, url + "?q=test"}
 	threats, e := sb.LookupURLs(urls)
