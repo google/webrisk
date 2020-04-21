@@ -110,8 +110,8 @@ func (a *netAPI) ListUpdate(ctx context.Context, threatType pb.ThreatType, versi
 	// Add fields from ComputeThreatListDiffRequest to URL request
 	q := u.Query()
 	q.Set(threatTypeString, threatType.String())
-	if string(versionToken) != "" {
-		q.Set(versionTokenString, string(versionToken))
+	if len(versionToken) != 0 {
+		q.Set(versionTokenString, base64.StdEncoding.EncodeToString(versionToken))
 	}
 	for _, compressionType := range compressionTypes {
 		q.Add(supportedCompressionsString, compressionType.String())
