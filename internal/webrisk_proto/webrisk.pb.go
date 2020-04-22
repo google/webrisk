@@ -16,33 +16,30 @@
 // source: webrisk.proto
 
 /*
-Package google_cloud_webrisk_v1beta1 is a generated protocol buffer package.
+Package google_cloud_webrisk_v1 is a generated protocol buffer package.
 
 It is generated from these files:
-    webrisk.proto
+	webrisk.proto
 
 It has these top-level messages:
-    ComputeThreatListDiffRequest
-    ComputeThreatListDiffResponse
-    SearchUrisRequest
-    SearchUrisResponse
-    SearchHashesRequest
-    SearchHashesResponse
-    ThreatEntryAdditions
-    ThreatEntryRemovals
-    RawIndices
-    RawHashes
-    RiceDeltaEncoding
+	ComputeThreatListDiffRequest
+	ComputeThreatListDiffResponse
+	SearchUrisRequest
+	SearchUrisResponse
+	SearchHashesRequest
+	SearchHashesResponse
+	ThreatEntryAdditions
+	ThreatEntryRemovals
+	RawIndices
+	RawHashes
+	RiceDeltaEncoding
 */
-
 package google_cloud_webrisk_v1
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
+import google_protobuf "github.com/golang/protobuf/ptypes/timestamp"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -53,7 +50,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 // The type of threat. This maps dirrectly to the threat list a threat may
 // belong to.
@@ -76,7 +73,6 @@ var ThreatType_name = map[int32]string{
 	2: "SOCIAL_ENGINEERING",
 	3: "UNWANTED_SOFTWARE",
 }
-
 var ThreatType_value = map[string]int32{
 	"THREAT_TYPE_UNSPECIFIED": 0,
 	"MALWARE":                 1,
@@ -87,10 +83,7 @@ var ThreatType_value = map[string]int32{
 func (x ThreatType) String() string {
 	return proto.EnumName(ThreatType_name, int32(x))
 }
-
-func (ThreatType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{0}
-}
+func (ThreatType) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 // The ways in which threat entry sets can be compressed.
 type CompressionType int32
@@ -109,7 +102,6 @@ var CompressionType_name = map[int32]string{
 	1: "RAW",
 	2: "RICE",
 }
-
 var CompressionType_value = map[string]int32{
 	"COMPRESSION_TYPE_UNSPECIFIED": 0,
 	"RAW":                          1,
@@ -119,10 +111,7 @@ var CompressionType_value = map[string]int32{
 func (x CompressionType) String() string {
 	return proto.EnumName(CompressionType_name, int32(x))
 }
-
-func (CompressionType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{1}
-}
+func (CompressionType) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
 // The type of response sent to the client.
 type ComputeThreatListDiffResponse_ResponseType int32
@@ -143,7 +132,6 @@ var ComputeThreatListDiffResponse_ResponseType_name = map[int32]string{
 	1: "DIFF",
 	2: "RESET",
 }
-
 var ComputeThreatListDiffResponse_ResponseType_value = map[string]int32{
 	"RESPONSE_TYPE_UNSPECIFIED": 0,
 	"DIFF":                      1,
@@ -153,49 +141,25 @@ var ComputeThreatListDiffResponse_ResponseType_value = map[string]int32{
 func (x ComputeThreatListDiffResponse_ResponseType) String() string {
 	return proto.EnumName(ComputeThreatListDiffResponse_ResponseType_name, int32(x))
 }
-
 func (ComputeThreatListDiffResponse_ResponseType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{1, 0}
+	return fileDescriptor0, []int{1, 0}
 }
 
 // Describes an API diff request.
 type ComputeThreatListDiffRequest struct {
 	// Required. The ThreatList to update.
-	ThreatType ThreatType `protobuf:"varint,1,opt,name=threat_type,json=threatType,proto3,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_type,omitempty"`
+	ThreatType ThreatType `protobuf:"varint,1,opt,name=threat_type,json=threatType,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_type,omitempty"`
 	// The current version token of the client for the requested list (the
 	// client version that was received from the last successful diff).
 	VersionToken []byte `protobuf:"bytes,2,opt,name=version_token,json=versionToken,proto3" json:"version_token,omitempty"`
 	// The constraints associated with this request.
-	Constraints          *ComputeThreatListDiffRequest_Constraints `protobuf:"bytes,3,opt,name=constraints,proto3" json:"constraints,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                                  `json:"-"`
-	XXX_unrecognized     []byte                                    `json:"-"`
-	XXX_sizecache        int32                                     `json:"-"`
+	Constraints *ComputeThreatListDiffRequest_Constraints `protobuf:"bytes,3,opt,name=constraints" json:"constraints,omitempty"`
 }
 
-func (m *ComputeThreatListDiffRequest) Reset()         { *m = ComputeThreatListDiffRequest{} }
-func (m *ComputeThreatListDiffRequest) String() string { return proto.CompactTextString(m) }
-func (*ComputeThreatListDiffRequest) ProtoMessage()    {}
-func (*ComputeThreatListDiffRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{0}
-}
-
-func (m *ComputeThreatListDiffRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ComputeThreatListDiffRequest.Unmarshal(m, b)
-}
-func (m *ComputeThreatListDiffRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ComputeThreatListDiffRequest.Marshal(b, m, deterministic)
-}
-func (m *ComputeThreatListDiffRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ComputeThreatListDiffRequest.Merge(m, src)
-}
-func (m *ComputeThreatListDiffRequest) XXX_Size() int {
-	return xxx_messageInfo_ComputeThreatListDiffRequest.Size(m)
-}
-func (m *ComputeThreatListDiffRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ComputeThreatListDiffRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ComputeThreatListDiffRequest proto.InternalMessageInfo
+func (m *ComputeThreatListDiffRequest) Reset()                    { *m = ComputeThreatListDiffRequest{} }
+func (m *ComputeThreatListDiffRequest) String() string            { return proto.CompactTextString(m) }
+func (*ComputeThreatListDiffRequest) ProtoMessage()               {}
+func (*ComputeThreatListDiffRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 func (m *ComputeThreatListDiffRequest) GetThreatType() ThreatType {
 	if m != nil {
@@ -223,16 +187,13 @@ type ComputeThreatListDiffRequest_Constraints struct {
 	// The maximum size in number of entries. The diff will not contain more
 	// entries than this value.  This should be a power of 2 between 2**10 and
 	// 2**20.  If zero, no diff size limit is set.
-	MaxDiffEntries int32 `protobuf:"varint,1,opt,name=max_diff_entries,json=maxDiffEntries,proto3" json:"max_diff_entries,omitempty"`
+	MaxDiffEntries int32 `protobuf:"varint,1,opt,name=max_diff_entries,json=maxDiffEntries" json:"max_diff_entries,omitempty"`
 	// Sets the maximum number of entries that the client is willing to have
 	// in the local database. This should be a power of 2 between 2**10 and
 	// 2**20. If zero, no database size limit is set.
-	MaxDatabaseEntries int32 `protobuf:"varint,2,opt,name=max_database_entries,json=maxDatabaseEntries,proto3" json:"max_database_entries,omitempty"`
+	MaxDatabaseEntries int32 `protobuf:"varint,2,opt,name=max_database_entries,json=maxDatabaseEntries" json:"max_database_entries,omitempty"`
 	// The compression types supported by the client.
-	SupportedCompressions []CompressionType `protobuf:"varint,3,rep,packed,name=supported_compressions,json=supportedCompressions,proto3,enum=google.cloud.webrisk.v1.CompressionType" json:"supported_compressions,omitempty"`
-	XXX_NoUnkeyedLiteral  struct{}          `json:"-"`
-	XXX_unrecognized      []byte            `json:"-"`
-	XXX_sizecache         int32             `json:"-"`
+	SupportedCompressions []CompressionType `protobuf:"varint,3,rep,packed,name=supported_compressions,json=supportedCompressions,enum=google.cloud.webrisk.v1.CompressionType" json:"supported_compressions,omitempty"`
 }
 
 func (m *ComputeThreatListDiffRequest_Constraints) Reset() {
@@ -241,26 +202,8 @@ func (m *ComputeThreatListDiffRequest_Constraints) Reset() {
 func (m *ComputeThreatListDiffRequest_Constraints) String() string { return proto.CompactTextString(m) }
 func (*ComputeThreatListDiffRequest_Constraints) ProtoMessage()    {}
 func (*ComputeThreatListDiffRequest_Constraints) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{0, 0}
+	return fileDescriptor0, []int{0, 0}
 }
-
-func (m *ComputeThreatListDiffRequest_Constraints) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ComputeThreatListDiffRequest_Constraints.Unmarshal(m, b)
-}
-func (m *ComputeThreatListDiffRequest_Constraints) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ComputeThreatListDiffRequest_Constraints.Marshal(b, m, deterministic)
-}
-func (m *ComputeThreatListDiffRequest_Constraints) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ComputeThreatListDiffRequest_Constraints.Merge(m, src)
-}
-func (m *ComputeThreatListDiffRequest_Constraints) XXX_Size() int {
-	return xxx_messageInfo_ComputeThreatListDiffRequest_Constraints.Size(m)
-}
-func (m *ComputeThreatListDiffRequest_Constraints) XXX_DiscardUnknown() {
-	xxx_messageInfo_ComputeThreatListDiffRequest_Constraints.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ComputeThreatListDiffRequest_Constraints proto.InternalMessageInfo
 
 func (m *ComputeThreatListDiffRequest_Constraints) GetMaxDiffEntries() int32 {
 	if m != nil {
@@ -286,53 +229,30 @@ func (m *ComputeThreatListDiffRequest_Constraints) GetSupportedCompressions() []
 type ComputeThreatListDiffResponse struct {
 	// The type of response. This may indicate that an action is required by the
 	// client when the response is received.
-	ResponseType ComputeThreatListDiffResponse_ResponseType `protobuf:"varint,4,opt,name=response_type,json=responseType,proto3,enum=google.cloud.webrisk.v1.ComputeThreatListDiffResponse_ResponseType" json:"response_type,omitempty"`
+	ResponseType ComputeThreatListDiffResponse_ResponseType `protobuf:"varint,4,opt,name=response_type,json=responseType,enum=google.cloud.webrisk.v1.ComputeThreatListDiffResponse_ResponseType" json:"response_type,omitempty"`
 	// A set of entries to add to a local threat type's list.
-	Additions *ThreatEntryAdditions `protobuf:"bytes,5,opt,name=additions,proto3" json:"additions,omitempty"`
+	Additions *ThreatEntryAdditions `protobuf:"bytes,5,opt,name=additions" json:"additions,omitempty"`
 	// A set of entries to remove from a local threat type's list.
 	// This field may be empty.
-	Removals *ThreatEntryRemovals `protobuf:"bytes,6,opt,name=removals,proto3" json:"removals,omitempty"`
+	Removals *ThreatEntryRemovals `protobuf:"bytes,6,opt,name=removals" json:"removals,omitempty"`
 	// The new opaque client version token.
 	NewVersionToken []byte `protobuf:"bytes,7,opt,name=new_version_token,json=newVersionToken,proto3" json:"new_version_token,omitempty"`
 	// The expected SHA256 hash of the client state; that is, of the sorted list
 	// of all hashes present in the database after applying the provided diff.
 	// If the client state doesn't match the expected state, the client must
 	// disregard this diff and retry later.
-	Checksum *ComputeThreatListDiffResponse_Checksum `protobuf:"bytes,8,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	Checksum *ComputeThreatListDiffResponse_Checksum `protobuf:"bytes,8,opt,name=checksum" json:"checksum,omitempty"`
 	// The soonest the client should wait before issuing any diff
 	// request. Querying sooner is unlikely to produce a meaningful diff.
 	// Waiting longer is acceptable considering the use case.
 	// If this field is not set clients may update as soon as they want.
-	RecommendedNextDiff  *timestamp.Timestamp `protobuf:"bytes,2,opt,name=recommended_next_diff,json=recommendedNextDiff,proto3" json:"recommended_next_diff,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	RecommendedNextDiff *google_protobuf.Timestamp `protobuf:"bytes,2,opt,name=recommended_next_diff,json=recommendedNextDiff" json:"recommended_next_diff,omitempty"`
 }
 
-func (m *ComputeThreatListDiffResponse) Reset()         { *m = ComputeThreatListDiffResponse{} }
-func (m *ComputeThreatListDiffResponse) String() string { return proto.CompactTextString(m) }
-func (*ComputeThreatListDiffResponse) ProtoMessage()    {}
-func (*ComputeThreatListDiffResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{1}
-}
-
-func (m *ComputeThreatListDiffResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ComputeThreatListDiffResponse.Unmarshal(m, b)
-}
-func (m *ComputeThreatListDiffResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ComputeThreatListDiffResponse.Marshal(b, m, deterministic)
-}
-func (m *ComputeThreatListDiffResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ComputeThreatListDiffResponse.Merge(m, src)
-}
-func (m *ComputeThreatListDiffResponse) XXX_Size() int {
-	return xxx_messageInfo_ComputeThreatListDiffResponse.Size(m)
-}
-func (m *ComputeThreatListDiffResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ComputeThreatListDiffResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ComputeThreatListDiffResponse proto.InternalMessageInfo
+func (m *ComputeThreatListDiffResponse) Reset()                    { *m = ComputeThreatListDiffResponse{} }
+func (m *ComputeThreatListDiffResponse) String() string            { return proto.CompactTextString(m) }
+func (*ComputeThreatListDiffResponse) ProtoMessage()               {}
+func (*ComputeThreatListDiffResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
 func (m *ComputeThreatListDiffResponse) GetResponseType() ComputeThreatListDiffResponse_ResponseType {
 	if m != nil {
@@ -369,7 +289,7 @@ func (m *ComputeThreatListDiffResponse) GetChecksum() *ComputeThreatListDiffResp
 	return nil
 }
 
-func (m *ComputeThreatListDiffResponse) GetRecommendedNextDiff() *timestamp.Timestamp {
+func (m *ComputeThreatListDiffResponse) GetRecommendedNextDiff() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.RecommendedNextDiff
 	}
@@ -380,10 +300,7 @@ func (m *ComputeThreatListDiffResponse) GetRecommendedNextDiff() *timestamp.Time
 type ComputeThreatListDiffResponse_Checksum struct {
 	// The SHA256 hash of the client state; that is, of the sorted list of all
 	// hashes present in the database.
-	Sha256               []byte   `protobuf:"bytes,1,opt,name=sha256,proto3" json:"sha256,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Sha256 []byte `protobuf:"bytes,1,opt,name=sha256,proto3" json:"sha256,omitempty"`
 }
 
 func (m *ComputeThreatListDiffResponse_Checksum) Reset() {
@@ -392,26 +309,8 @@ func (m *ComputeThreatListDiffResponse_Checksum) Reset() {
 func (m *ComputeThreatListDiffResponse_Checksum) String() string { return proto.CompactTextString(m) }
 func (*ComputeThreatListDiffResponse_Checksum) ProtoMessage()    {}
 func (*ComputeThreatListDiffResponse_Checksum) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{1, 0}
+	return fileDescriptor0, []int{1, 0}
 }
-
-func (m *ComputeThreatListDiffResponse_Checksum) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ComputeThreatListDiffResponse_Checksum.Unmarshal(m, b)
-}
-func (m *ComputeThreatListDiffResponse_Checksum) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ComputeThreatListDiffResponse_Checksum.Marshal(b, m, deterministic)
-}
-func (m *ComputeThreatListDiffResponse_Checksum) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ComputeThreatListDiffResponse_Checksum.Merge(m, src)
-}
-func (m *ComputeThreatListDiffResponse_Checksum) XXX_Size() int {
-	return xxx_messageInfo_ComputeThreatListDiffResponse_Checksum.Size(m)
-}
-func (m *ComputeThreatListDiffResponse_Checksum) XXX_DiscardUnknown() {
-	xxx_messageInfo_ComputeThreatListDiffResponse_Checksum.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ComputeThreatListDiffResponse_Checksum proto.InternalMessageInfo
 
 func (m *ComputeThreatListDiffResponse_Checksum) GetSha256() []byte {
 	if m != nil {
@@ -423,38 +322,15 @@ func (m *ComputeThreatListDiffResponse_Checksum) GetSha256() []byte {
 // Request to check URI entries against threatLists.
 type SearchUrisRequest struct {
 	// The URI to be checked for matches.
-	Uri string `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
+	Uri string `protobuf:"bytes,1,opt,name=uri" json:"uri,omitempty"`
 	// Required. The ThreatLists to search in.
-	ThreatTypes          []ThreatType `protobuf:"varint,2,rep,packed,name=threat_types,json=threatTypes,proto3,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	ThreatTypes []ThreatType `protobuf:"varint,2,rep,packed,name=threat_types,json=threatTypes,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
 }
 
-func (m *SearchUrisRequest) Reset()         { *m = SearchUrisRequest{} }
-func (m *SearchUrisRequest) String() string { return proto.CompactTextString(m) }
-func (*SearchUrisRequest) ProtoMessage()    {}
-func (*SearchUrisRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{2}
-}
-
-func (m *SearchUrisRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SearchUrisRequest.Unmarshal(m, b)
-}
-func (m *SearchUrisRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SearchUrisRequest.Marshal(b, m, deterministic)
-}
-func (m *SearchUrisRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SearchUrisRequest.Merge(m, src)
-}
-func (m *SearchUrisRequest) XXX_Size() int {
-	return xxx_messageInfo_SearchUrisRequest.Size(m)
-}
-func (m *SearchUrisRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_SearchUrisRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SearchUrisRequest proto.InternalMessageInfo
+func (m *SearchUrisRequest) Reset()                    { *m = SearchUrisRequest{} }
+func (m *SearchUrisRequest) String() string            { return proto.CompactTextString(m) }
+func (*SearchUrisRequest) ProtoMessage()               {}
+func (*SearchUrisRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
 func (m *SearchUrisRequest) GetUri() string {
 	if m != nil {
@@ -472,36 +348,13 @@ func (m *SearchUrisRequest) GetThreatTypes() []ThreatType {
 
 type SearchUrisResponse struct {
 	// The threat list matches. This may be empty if the URI is on no list.
-	Threat               *SearchUrisResponse_ThreatUri `protobuf:"bytes,1,opt,name=threat,proto3" json:"threat,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
+	Threat *SearchUrisResponse_ThreatUri `protobuf:"bytes,1,opt,name=threat" json:"threat,omitempty"`
 }
 
-func (m *SearchUrisResponse) Reset()         { *m = SearchUrisResponse{} }
-func (m *SearchUrisResponse) String() string { return proto.CompactTextString(m) }
-func (*SearchUrisResponse) ProtoMessage()    {}
-func (*SearchUrisResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{3}
-}
-
-func (m *SearchUrisResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SearchUrisResponse.Unmarshal(m, b)
-}
-func (m *SearchUrisResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SearchUrisResponse.Marshal(b, m, deterministic)
-}
-func (m *SearchUrisResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SearchUrisResponse.Merge(m, src)
-}
-func (m *SearchUrisResponse) XXX_Size() int {
-	return xxx_messageInfo_SearchUrisResponse.Size(m)
-}
-func (m *SearchUrisResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_SearchUrisResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SearchUrisResponse proto.InternalMessageInfo
+func (m *SearchUrisResponse) Reset()                    { *m = SearchUrisResponse{} }
+func (m *SearchUrisResponse) String() string            { return proto.CompactTextString(m) }
+func (*SearchUrisResponse) ProtoMessage()               {}
+func (*SearchUrisResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
 func (m *SearchUrisResponse) GetThreat() *SearchUrisResponse_ThreatUri {
 	if m != nil {
@@ -513,39 +366,16 @@ func (m *SearchUrisResponse) GetThreat() *SearchUrisResponse_ThreatUri {
 // Contains threat information on a matching uri.
 type SearchUrisResponse_ThreatUri struct {
 	// The ThreatList this threat belongs to.
-	ThreatTypes []ThreatType `protobuf:"varint,1,rep,packed,name=threat_types,json=threatTypes,proto3,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
+	ThreatTypes []ThreatType `protobuf:"varint,1,rep,packed,name=threat_types,json=threatTypes,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
 	// The cache lifetime for the returned match. Clients must not cache this
 	// response past this timestamp to avoid false positives.
-	ExpireTime           *timestamp.Timestamp `protobuf:"bytes,2,opt,name=expire_time,json=expireTime,proto3" json:"expire_time,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	ExpireTime *google_protobuf.Timestamp `protobuf:"bytes,2,opt,name=expire_time,json=expireTime" json:"expire_time,omitempty"`
 }
 
-func (m *SearchUrisResponse_ThreatUri) Reset()         { *m = SearchUrisResponse_ThreatUri{} }
-func (m *SearchUrisResponse_ThreatUri) String() string { return proto.CompactTextString(m) }
-func (*SearchUrisResponse_ThreatUri) ProtoMessage()    {}
-func (*SearchUrisResponse_ThreatUri) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{3, 0}
-}
-
-func (m *SearchUrisResponse_ThreatUri) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SearchUrisResponse_ThreatUri.Unmarshal(m, b)
-}
-func (m *SearchUrisResponse_ThreatUri) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SearchUrisResponse_ThreatUri.Marshal(b, m, deterministic)
-}
-func (m *SearchUrisResponse_ThreatUri) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SearchUrisResponse_ThreatUri.Merge(m, src)
-}
-func (m *SearchUrisResponse_ThreatUri) XXX_Size() int {
-	return xxx_messageInfo_SearchUrisResponse_ThreatUri.Size(m)
-}
-func (m *SearchUrisResponse_ThreatUri) XXX_DiscardUnknown() {
-	xxx_messageInfo_SearchUrisResponse_ThreatUri.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SearchUrisResponse_ThreatUri proto.InternalMessageInfo
+func (m *SearchUrisResponse_ThreatUri) Reset()                    { *m = SearchUrisResponse_ThreatUri{} }
+func (m *SearchUrisResponse_ThreatUri) String() string            { return proto.CompactTextString(m) }
+func (*SearchUrisResponse_ThreatUri) ProtoMessage()               {}
+func (*SearchUrisResponse_ThreatUri) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3, 0} }
 
 func (m *SearchUrisResponse_ThreatUri) GetThreatTypes() []ThreatType {
 	if m != nil {
@@ -554,7 +384,7 @@ func (m *SearchUrisResponse_ThreatUri) GetThreatTypes() []ThreatType {
 	return nil
 }
 
-func (m *SearchUrisResponse_ThreatUri) GetExpireTime() *timestamp.Timestamp {
+func (m *SearchUrisResponse_ThreatUri) GetExpireTime() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.ExpireTime
 	}
@@ -567,36 +397,13 @@ type SearchHashesRequest struct {
 	// hash. For JSON requests, this field is base64-encoded.
 	HashPrefix []byte `protobuf:"bytes,1,opt,name=hash_prefix,json=hashPrefix,proto3" json:"hash_prefix,omitempty"`
 	// Required. The ThreatLists to search in.
-	ThreatTypes          []ThreatType `protobuf:"varint,2,rep,packed,name=threat_types,json=threatTypes,proto3,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	ThreatTypes []ThreatType `protobuf:"varint,2,rep,packed,name=threat_types,json=threatTypes,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
 }
 
-func (m *SearchHashesRequest) Reset()         { *m = SearchHashesRequest{} }
-func (m *SearchHashesRequest) String() string { return proto.CompactTextString(m) }
-func (*SearchHashesRequest) ProtoMessage()    {}
-func (*SearchHashesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{4}
-}
-
-func (m *SearchHashesRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SearchHashesRequest.Unmarshal(m, b)
-}
-func (m *SearchHashesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SearchHashesRequest.Marshal(b, m, deterministic)
-}
-func (m *SearchHashesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SearchHashesRequest.Merge(m, src)
-}
-func (m *SearchHashesRequest) XXX_Size() int {
-	return xxx_messageInfo_SearchHashesRequest.Size(m)
-}
-func (m *SearchHashesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_SearchHashesRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SearchHashesRequest proto.InternalMessageInfo
+func (m *SearchHashesRequest) Reset()                    { *m = SearchHashesRequest{} }
+func (m *SearchHashesRequest) String() string            { return proto.CompactTextString(m) }
+func (*SearchHashesRequest) ProtoMessage()               {}
+func (*SearchHashesRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
 
 func (m *SearchHashesRequest) GetHashPrefix() []byte {
 	if m != nil {
@@ -615,39 +422,16 @@ func (m *SearchHashesRequest) GetThreatTypes() []ThreatType {
 type SearchHashesResponse struct {
 	// The full hashes that matched the requested prefixes.
 	// The hash will be populated in the key.
-	Threats []*SearchHashesResponse_ThreatHash `protobuf:"bytes,1,rep,name=threats,proto3" json:"threats,omitempty"`
+	Threats []*SearchHashesResponse_ThreatHash `protobuf:"bytes,1,rep,name=threats" json:"threats,omitempty"`
 	// For requested entities that did not match the threat list, how long to
 	// cache the response until.
-	NegativeExpireTime   *timestamp.Timestamp `protobuf:"bytes,2,opt,name=negative_expire_time,json=negativeExpireTime,proto3" json:"negative_expire_time,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	NegativeExpireTime *google_protobuf.Timestamp `protobuf:"bytes,2,opt,name=negative_expire_time,json=negativeExpireTime" json:"negative_expire_time,omitempty"`
 }
 
-func (m *SearchHashesResponse) Reset()         { *m = SearchHashesResponse{} }
-func (m *SearchHashesResponse) String() string { return proto.CompactTextString(m) }
-func (*SearchHashesResponse) ProtoMessage()    {}
-func (*SearchHashesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{5}
-}
-
-func (m *SearchHashesResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SearchHashesResponse.Unmarshal(m, b)
-}
-func (m *SearchHashesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SearchHashesResponse.Marshal(b, m, deterministic)
-}
-func (m *SearchHashesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SearchHashesResponse.Merge(m, src)
-}
-func (m *SearchHashesResponse) XXX_Size() int {
-	return xxx_messageInfo_SearchHashesResponse.Size(m)
-}
-func (m *SearchHashesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_SearchHashesResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SearchHashesResponse proto.InternalMessageInfo
+func (m *SearchHashesResponse) Reset()                    { *m = SearchHashesResponse{} }
+func (m *SearchHashesResponse) String() string            { return proto.CompactTextString(m) }
+func (*SearchHashesResponse) ProtoMessage()               {}
+func (*SearchHashesResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
 
 func (m *SearchHashesResponse) GetThreats() []*SearchHashesResponse_ThreatHash {
 	if m != nil {
@@ -656,7 +440,7 @@ func (m *SearchHashesResponse) GetThreats() []*SearchHashesResponse_ThreatHash {
 	return nil
 }
 
-func (m *SearchHashesResponse) GetNegativeExpireTime() *timestamp.Timestamp {
+func (m *SearchHashesResponse) GetNegativeExpireTime() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.NegativeExpireTime
 	}
@@ -667,42 +451,21 @@ func (m *SearchHashesResponse) GetNegativeExpireTime() *timestamp.Timestamp {
 type SearchHashesResponse_ThreatHash struct {
 	// The ThreatList this threat belongs to.
 	// This must contain at least one entry.
-	ThreatTypes []ThreatType `protobuf:"varint,1,rep,packed,name=threat_types,json=threatTypes,proto3,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
+	ThreatTypes []ThreatType `protobuf:"varint,1,rep,packed,name=threat_types,json=threatTypes,enum=google.cloud.webrisk.v1.ThreatType" json:"threat_types,omitempty"`
 	// A 32 byte SHA256 hash. This field is in binary format. For JSON
 	// requests, hashes are base64-encoded.
 	Hash []byte `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
 	// The cache lifetime for the returned match. Clients must not cache this
 	// response past this timestamp to avoid false positives.
-	ExpireTime           *timestamp.Timestamp `protobuf:"bytes,3,opt,name=expire_time,json=expireTime,proto3" json:"expire_time,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	ExpireTime *google_protobuf.Timestamp `protobuf:"bytes,3,opt,name=expire_time,json=expireTime" json:"expire_time,omitempty"`
 }
 
 func (m *SearchHashesResponse_ThreatHash) Reset()         { *m = SearchHashesResponse_ThreatHash{} }
 func (m *SearchHashesResponse_ThreatHash) String() string { return proto.CompactTextString(m) }
 func (*SearchHashesResponse_ThreatHash) ProtoMessage()    {}
 func (*SearchHashesResponse_ThreatHash) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{5, 0}
+	return fileDescriptor0, []int{5, 0}
 }
-
-func (m *SearchHashesResponse_ThreatHash) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SearchHashesResponse_ThreatHash.Unmarshal(m, b)
-}
-func (m *SearchHashesResponse_ThreatHash) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SearchHashesResponse_ThreatHash.Marshal(b, m, deterministic)
-}
-func (m *SearchHashesResponse_ThreatHash) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SearchHashesResponse_ThreatHash.Merge(m, src)
-}
-func (m *SearchHashesResponse_ThreatHash) XXX_Size() int {
-	return xxx_messageInfo_SearchHashesResponse_ThreatHash.Size(m)
-}
-func (m *SearchHashesResponse_ThreatHash) XXX_DiscardUnknown() {
-	xxx_messageInfo_SearchHashesResponse_ThreatHash.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SearchHashesResponse_ThreatHash proto.InternalMessageInfo
 
 func (m *SearchHashesResponse_ThreatHash) GetThreatTypes() []ThreatType {
 	if m != nil {
@@ -718,7 +481,7 @@ func (m *SearchHashesResponse_ThreatHash) GetHash() []byte {
 	return nil
 }
 
-func (m *SearchHashesResponse_ThreatHash) GetExpireTime() *timestamp.Timestamp {
+func (m *SearchHashesResponse_ThreatHash) GetExpireTime() *google_protobuf.Timestamp {
 	if m != nil {
 		return m.ExpireTime
 	}
@@ -730,40 +493,17 @@ func (m *SearchHashesResponse_ThreatHash) GetExpireTime() *timestamp.Timestamp {
 type ThreatEntryAdditions struct {
 	// The raw SHA256-formatted entries.
 	// Repeated to allow returning sets of hashes with different prefix sizes.
-	RawHashes []*RawHashes `protobuf:"bytes,1,rep,name=raw_hashes,json=rawHashes,proto3" json:"raw_hashes,omitempty"`
+	RawHashes []*RawHashes `protobuf:"bytes,1,rep,name=raw_hashes,json=rawHashes" json:"raw_hashes,omitempty"`
 	// The encoded 4-byte prefixes of SHA256-formatted entries, using a
 	// Golomb-Rice encoding. The hashes are converted to uint32, sorted in
 	// ascending order, then delta encoded and stored as encoded_data.
-	RiceHashes           *RiceDeltaEncoding `protobuf:"bytes,2,opt,name=rice_hashes,json=riceHashes,proto3" json:"rice_hashes,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+	RiceHashes *RiceDeltaEncoding `protobuf:"bytes,2,opt,name=rice_hashes,json=riceHashes" json:"rice_hashes,omitempty"`
 }
 
-func (m *ThreatEntryAdditions) Reset()         { *m = ThreatEntryAdditions{} }
-func (m *ThreatEntryAdditions) String() string { return proto.CompactTextString(m) }
-func (*ThreatEntryAdditions) ProtoMessage()    {}
-func (*ThreatEntryAdditions) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{6}
-}
-
-func (m *ThreatEntryAdditions) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ThreatEntryAdditions.Unmarshal(m, b)
-}
-func (m *ThreatEntryAdditions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ThreatEntryAdditions.Marshal(b, m, deterministic)
-}
-func (m *ThreatEntryAdditions) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ThreatEntryAdditions.Merge(m, src)
-}
-func (m *ThreatEntryAdditions) XXX_Size() int {
-	return xxx_messageInfo_ThreatEntryAdditions.Size(m)
-}
-func (m *ThreatEntryAdditions) XXX_DiscardUnknown() {
-	xxx_messageInfo_ThreatEntryAdditions.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ThreatEntryAdditions proto.InternalMessageInfo
+func (m *ThreatEntryAdditions) Reset()                    { *m = ThreatEntryAdditions{} }
+func (m *ThreatEntryAdditions) String() string            { return proto.CompactTextString(m) }
+func (*ThreatEntryAdditions) ProtoMessage()               {}
+func (*ThreatEntryAdditions) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
 
 func (m *ThreatEntryAdditions) GetRawHashes() []*RawHashes {
 	if m != nil {
@@ -782,41 +522,18 @@ func (m *ThreatEntryAdditions) GetRiceHashes() *RiceDeltaEncoding {
 // Contains the set of entries to remove from a local database.
 type ThreatEntryRemovals struct {
 	// The raw removal indices for a local list.
-	RawIndices *RawIndices `protobuf:"bytes,1,opt,name=raw_indices,json=rawIndices,proto3" json:"raw_indices,omitempty"`
+	RawIndices *RawIndices `protobuf:"bytes,1,opt,name=raw_indices,json=rawIndices" json:"raw_indices,omitempty"`
 	// The encoded local, lexicographically-sorted list indices, using a
 	// Golomb-Rice encoding. Used for sending compressed removal indices. The
 	// removal indices (uint32) are sorted in ascending order, then delta encoded
 	// and stored as encoded_data.
-	RiceIndices          *RiceDeltaEncoding `protobuf:"bytes,2,opt,name=rice_indices,json=riceIndices,proto3" json:"rice_indices,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+	RiceIndices *RiceDeltaEncoding `protobuf:"bytes,2,opt,name=rice_indices,json=riceIndices" json:"rice_indices,omitempty"`
 }
 
-func (m *ThreatEntryRemovals) Reset()         { *m = ThreatEntryRemovals{} }
-func (m *ThreatEntryRemovals) String() string { return proto.CompactTextString(m) }
-func (*ThreatEntryRemovals) ProtoMessage()    {}
-func (*ThreatEntryRemovals) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{7}
-}
-
-func (m *ThreatEntryRemovals) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ThreatEntryRemovals.Unmarshal(m, b)
-}
-func (m *ThreatEntryRemovals) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ThreatEntryRemovals.Marshal(b, m, deterministic)
-}
-func (m *ThreatEntryRemovals) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ThreatEntryRemovals.Merge(m, src)
-}
-func (m *ThreatEntryRemovals) XXX_Size() int {
-	return xxx_messageInfo_ThreatEntryRemovals.Size(m)
-}
-func (m *ThreatEntryRemovals) XXX_DiscardUnknown() {
-	xxx_messageInfo_ThreatEntryRemovals.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ThreatEntryRemovals proto.InternalMessageInfo
+func (m *ThreatEntryRemovals) Reset()                    { *m = ThreatEntryRemovals{} }
+func (m *ThreatEntryRemovals) String() string            { return proto.CompactTextString(m) }
+func (*ThreatEntryRemovals) ProtoMessage()               {}
+func (*ThreatEntryRemovals) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
 
 func (m *ThreatEntryRemovals) GetRawIndices() *RawIndices {
 	if m != nil {
@@ -835,36 +552,13 @@ func (m *ThreatEntryRemovals) GetRiceIndices() *RiceDeltaEncoding {
 // A set of raw indices to remove from a local list.
 type RawIndices struct {
 	// The indices to remove from a lexicographically-sorted local list.
-	Indices              []int32  `protobuf:"varint,1,rep,packed,name=indices,proto3" json:"indices,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Indices []int32 `protobuf:"varint,1,rep,packed,name=indices" json:"indices,omitempty"`
 }
 
-func (m *RawIndices) Reset()         { *m = RawIndices{} }
-func (m *RawIndices) String() string { return proto.CompactTextString(m) }
-func (*RawIndices) ProtoMessage()    {}
-func (*RawIndices) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{8}
-}
-
-func (m *RawIndices) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RawIndices.Unmarshal(m, b)
-}
-func (m *RawIndices) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RawIndices.Marshal(b, m, deterministic)
-}
-func (m *RawIndices) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RawIndices.Merge(m, src)
-}
-func (m *RawIndices) XXX_Size() int {
-	return xxx_messageInfo_RawIndices.Size(m)
-}
-func (m *RawIndices) XXX_DiscardUnknown() {
-	xxx_messageInfo_RawIndices.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RawIndices proto.InternalMessageInfo
+func (m *RawIndices) Reset()                    { *m = RawIndices{} }
+func (m *RawIndices) String() string            { return proto.CompactTextString(m) }
+func (*RawIndices) ProtoMessage()               {}
+func (*RawIndices) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
 
 func (m *RawIndices) GetIndices() []int32 {
 	if m != nil {
@@ -884,40 +578,17 @@ func (m *RawIndices) GetIndices() []int32 {
 type RawHashes struct {
 	// The number of bytes for each prefix encoded below.  This field can be
 	// anywhere from 4 (shortest prefix) to 32 (full SHA256 hash).
-	PrefixSize int32 `protobuf:"varint,1,opt,name=prefix_size,json=prefixSize,proto3" json:"prefix_size,omitempty"`
+	PrefixSize int32 `protobuf:"varint,1,opt,name=prefix_size,json=prefixSize" json:"prefix_size,omitempty"`
 	// The hashes, in binary format, concatenated into one long string. Hashes are
 	// sorted in lexicographic order. For JSON API users, hashes are
 	// base64-encoded.
-	RawHashes            []byte   `protobuf:"bytes,2,opt,name=raw_hashes,json=rawHashes,proto3" json:"raw_hashes,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	RawHashes []byte `protobuf:"bytes,2,opt,name=raw_hashes,json=rawHashes,proto3" json:"raw_hashes,omitempty"`
 }
 
-func (m *RawHashes) Reset()         { *m = RawHashes{} }
-func (m *RawHashes) String() string { return proto.CompactTextString(m) }
-func (*RawHashes) ProtoMessage()    {}
-func (*RawHashes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{9}
-}
-
-func (m *RawHashes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RawHashes.Unmarshal(m, b)
-}
-func (m *RawHashes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RawHashes.Marshal(b, m, deterministic)
-}
-func (m *RawHashes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RawHashes.Merge(m, src)
-}
-func (m *RawHashes) XXX_Size() int {
-	return xxx_messageInfo_RawHashes.Size(m)
-}
-func (m *RawHashes) XXX_DiscardUnknown() {
-	xxx_messageInfo_RawHashes.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RawHashes proto.InternalMessageInfo
+func (m *RawHashes) Reset()                    { *m = RawHashes{} }
+func (m *RawHashes) String() string            { return proto.CompactTextString(m) }
+func (*RawHashes) ProtoMessage()               {}
+func (*RawHashes) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
 
 func (m *RawHashes) GetPrefixSize() int32 {
 	if m != nil {
@@ -939,45 +610,22 @@ type RiceDeltaEncoding struct {
 	// The offset of the first entry in the encoded data, or, if only a single
 	// integer was encoded, that single integer's value. If the field is empty or
 	// missing, assume zero.
-	FirstValue int64 `protobuf:"varint,1,opt,name=first_value,json=firstValue,proto3" json:"first_value,omitempty"`
+	FirstValue int64 `protobuf:"varint,1,opt,name=first_value,json=firstValue" json:"first_value,omitempty"`
 	// The Golomb-Rice parameter, which is a number between 2 and 28. This field
 	// is missing (that is, zero) if `num_entries` is zero.
-	RiceParameter int32 `protobuf:"varint,2,opt,name=rice_parameter,json=riceParameter,proto3" json:"rice_parameter,omitempty"`
+	RiceParameter int32 `protobuf:"varint,2,opt,name=rice_parameter,json=riceParameter" json:"rice_parameter,omitempty"`
 	// The number of entries that are delta encoded in the encoded data. If only a
 	// single integer was encoded, this will be zero and the single value will be
 	// stored in `first_value`.
-	EntryCount int32 `protobuf:"varint,3,opt,name=entry_count,json=entryCount,proto3" json:"entry_count,omitempty"`
+	EntryCount int32 `protobuf:"varint,3,opt,name=entry_count,json=entryCount" json:"entry_count,omitempty"`
 	// The encoded deltas that are encoded using the Golomb-Rice coder.
-	EncodedData          []byte   `protobuf:"bytes,4,opt,name=encoded_data,json=encodedData,proto3" json:"encoded_data,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	EncodedData []byte `protobuf:"bytes,4,opt,name=encoded_data,json=encodedData,proto3" json:"encoded_data,omitempty"`
 }
 
-func (m *RiceDeltaEncoding) Reset()         { *m = RiceDeltaEncoding{} }
-func (m *RiceDeltaEncoding) String() string { return proto.CompactTextString(m) }
-func (*RiceDeltaEncoding) ProtoMessage()    {}
-func (*RiceDeltaEncoding) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b6274dc689248e20, []int{10}
-}
-
-func (m *RiceDeltaEncoding) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RiceDeltaEncoding.Unmarshal(m, b)
-}
-func (m *RiceDeltaEncoding) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RiceDeltaEncoding.Marshal(b, m, deterministic)
-}
-func (m *RiceDeltaEncoding) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RiceDeltaEncoding.Merge(m, src)
-}
-func (m *RiceDeltaEncoding) XXX_Size() int {
-	return xxx_messageInfo_RiceDeltaEncoding.Size(m)
-}
-func (m *RiceDeltaEncoding) XXX_DiscardUnknown() {
-	xxx_messageInfo_RiceDeltaEncoding.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RiceDeltaEncoding proto.InternalMessageInfo
+func (m *RiceDeltaEncoding) Reset()                    { *m = RiceDeltaEncoding{} }
+func (m *RiceDeltaEncoding) String() string            { return proto.CompactTextString(m) }
+func (*RiceDeltaEncoding) ProtoMessage()               {}
+func (*RiceDeltaEncoding) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
 
 func (m *RiceDeltaEncoding) GetFirstValue() int64 {
 	if m != nil {
@@ -1008,9 +656,6 @@ func (m *RiceDeltaEncoding) GetEncodedData() []byte {
 }
 
 func init() {
-	proto.RegisterEnum("google.cloud.webrisk.v1.ThreatType", ThreatType_name, ThreatType_value)
-	proto.RegisterEnum("google.cloud.webrisk.v1.CompressionType", CompressionType_name, CompressionType_value)
-	proto.RegisterEnum("google.cloud.webrisk.v1.ComputeThreatListDiffResponse_ResponseType", ComputeThreatListDiffResponse_ResponseType_name, ComputeThreatListDiffResponse_ResponseType_value)
 	proto.RegisterType((*ComputeThreatListDiffRequest)(nil), "google.cloud.webrisk.v1.ComputeThreatListDiffRequest")
 	proto.RegisterType((*ComputeThreatListDiffRequest_Constraints)(nil), "google.cloud.webrisk.v1.ComputeThreatListDiffRequest.Constraints")
 	proto.RegisterType((*ComputeThreatListDiffResponse)(nil), "google.cloud.webrisk.v1.ComputeThreatListDiffResponse")
@@ -1026,11 +671,14 @@ func init() {
 	proto.RegisterType((*RawIndices)(nil), "google.cloud.webrisk.v1.RawIndices")
 	proto.RegisterType((*RawHashes)(nil), "google.cloud.webrisk.v1.RawHashes")
 	proto.RegisterType((*RiceDeltaEncoding)(nil), "google.cloud.webrisk.v1.RiceDeltaEncoding")
+	proto.RegisterEnum("google.cloud.webrisk.v1.ThreatType", ThreatType_name, ThreatType_value)
+	proto.RegisterEnum("google.cloud.webrisk.v1.CompressionType", CompressionType_name, CompressionType_value)
+	proto.RegisterEnum("google.cloud.webrisk.v1.ComputeThreatListDiffResponse_ResponseType", ComputeThreatListDiffResponse_ResponseType_name, ComputeThreatListDiffResponse_ResponseType_value)
 }
 
-func init() { proto.RegisterFile("webrisk.proto", fileDescriptor_b6274dc689248e20) }
+func init() { proto.RegisterFile("webrisk.proto", fileDescriptor0) }
 
-var fileDescriptor_b6274dc689248e20 = []byte{
+var fileDescriptor0 = []byte{
 	// 1095 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0xcf, 0x6e, 0x1b, 0xb7,
 	0x13, 0xfe, 0xad, 0xe4, 0x7f, 0x9a, 0x95, 0x1d, 0x99, 0x71, 0x12, 0xfd, 0xd4, 0x04, 0x71, 0x37,
