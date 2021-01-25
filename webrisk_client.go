@@ -84,7 +84,7 @@ const (
 	DefaultServerURL = "webrisk.googleapis.com"
 
 	// DefaultUpdatePeriod is the default period for how often WebriskClient will
-	// reload its blacklist database.
+	// reload its blocklist database.
 	DefaultUpdatePeriod = 30 * time.Minute
 
 	// DefaultID and DefaultVersion are the default client ID and Version
@@ -155,7 +155,7 @@ type Config struct {
 
 	// DBPath is a path to a persistent database file.
 	// If empty, WebriskClient operates in a non-persistent manner.
-	// This means that blacklist results will not be cached beyond the lifetime
+	// This means that blocklist results will not be cached beyond the lifetime
 	// of the WebriskClient object.
 	DBPath string
 
@@ -342,7 +342,7 @@ func (wr *WebriskClient) WaitUntilReady(ctx context.Context) error {
 // The outer dimension is across all URLs requested, and will always have the
 // same length as urls regardless of whether an error occurs or not.
 // The inner dimension is across every fragment that a given URL produces.
-// For some URL at index i, one can check for a hit on any blacklist by
+// For some URL at index i, one can check for a hit on any blocklist by
 // checking if len(threats[i]) > 0.
 // The ThreatEntryType field in the inner ThreatType will be set to
 // ThreatEntryType_URL as this is a URL lookup.

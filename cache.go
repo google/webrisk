@@ -44,7 +44,7 @@ const (
 )
 
 // cache caches results from API calls to SearchHashesRequest to reduce
-// network calls for recently requested items. Since the global blacklist is
+// network calls for recently requested items. Since the global blocklist is
 // constantly changing, the Web Risk API defines TTLs for how long entries
 // can stay alive in the cache.
 type cache struct {
