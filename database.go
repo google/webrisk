@@ -39,7 +39,7 @@ const (
 )
 
 // database tracks the state of the threat lists published by the Webrisk API.
-// Since the global blacklist is constantly changing, the contents of the
+// Since the global blocklist is constantly changing, the contents of the
 // database needs to be periodically synced with the Webrisk servers in
 // order to provide protection for the latest threats.
 //
