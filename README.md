@@ -71,6 +71,14 @@ To use the local proxy server to check a URL, send a POST request to `127.0.0.1:
           ]
         }
 	```
+4. Or, if you would like to run the Proxy server as a container you can do as follows:
+```bash
+$> docker build --tag webrisk:local .
+```
+Once the image is built locally, you can run it:
+```bash
+$> docker run -it --rm -p 8080:8080 -e WR_API_KEY=XXXXXXXXXXX --name webrisk webrisk:local
+```
 
 # Command-Line Lookup
 
