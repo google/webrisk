@@ -61,7 +61,7 @@ Try these URLs:
 	```
 
 3.	The server also has a lightweight implementation of the API v4 threatMatches endpoint.  
-To use the local proxy server to check a URL, send a POST request to `127.0.0.1:8080/v1beta1/uris:search` with the following JSON body:
+To use the local proxy server to check a URL, send a POST request to `127.0.0.1:8080/v1/uris:search` with the following JSON body:
 
 	```json
 	{
