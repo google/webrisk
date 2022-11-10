@@ -10,5 +10,5 @@ require (
 
 require (
 	golang.org/x/text v0.4.0 // indirect
-	google.golang.org/protobuf v1.26.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 )
