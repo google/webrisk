@@ -115,6 +115,7 @@ const (
 	ThreatTypeMalware           = ThreatType(pb.ThreatType_MALWARE)
 	ThreatTypeSocialEngineering = ThreatType(pb.ThreatType_SOCIAL_ENGINEERING)
 	ThreatTypeUnwantedSoftware  = ThreatType(pb.ThreatType_UNWANTED_SOFTWARE)
+	ThreatTypeSocialEngineeringExtended = ThreatType(pb.ThreatType_SOCIAL_ENGINEERING_EXTENDED_COVERAGE)
 )
 
 // DefaultThreatLists is the default list of threat lists that WebriskClient
@@ -122,6 +123,7 @@ const (
 var DefaultThreatLists = []ThreatType{
 	ThreatTypeMalware,
 	ThreatTypeSocialEngineering,
+	ThreatTypeSocialEngineeringExtended,
 	ThreatTypeUnwantedSoftware,
 }
 

@@ -19,6 +19,8 @@ package google.cloud.webrisk.v1;
 
 import "google/protobuf/timestamp.proto";
 
+option go_package = "github.com/google/webrisk";
+
 // Describes an API diff request.
 message ComputeThreatListDiffRequest {
   // The constraints for this diff.
