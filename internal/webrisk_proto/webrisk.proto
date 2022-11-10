@@ -195,6 +195,10 @@ enum ThreatType {
 
   // Unwanted software targeting any platform.
   UNWANTED_SOFTWARE = 3;
+
+  // A list of extended coverage social engineering URIs targeting any
+  // platform.
+  SOCIAL_ENGINEERING_EXTENDED_COVERAGE = 4;
 }
 
 // The ways in which threat entry sets can be compressed.
