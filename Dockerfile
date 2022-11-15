@@ -1,9 +1,13 @@
 FROM golang:1.19 as build
 
 WORKDIR /go/src/webrisk
+
+# cache go.mod to pre-download dependencies
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
 COPY . .
 
-RUN go mod download
 RUN go vet -v
 RUN go test -v
 
