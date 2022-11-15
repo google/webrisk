@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,8 +29,8 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/google/webrisk/internal/webrisk_proto"
 	pt "github.com/golang/protobuf/ptypes"
+	pb "github.com/google/webrisk/internal/webrisk_proto"
 )
 
 func mustGetTempFile(t *testing.T) string {
@@ -292,8 +292,8 @@ func TestDatabaseUpdate(t *testing.T) {
 	)
 
 	// Helper function to aid in the construction on responses.
-	newResp := func(td ThreatType, rtype int, dels []int32, adds []string, state string, chksum string) pb.ComputeThreatListDiffResponse {
-		resp := pb.ComputeThreatListDiffResponse{
+	newResp := func(td ThreatType, rtype int, dels []int32, adds []string, state string, chksum string) *pb.ComputeThreatListDiffResponse {
+		resp := &pb.ComputeThreatListDiffResponse{
 			ResponseType:    pb.ComputeThreatListDiffResponse_ResponseType(rtype),
 			NewVersionToken: []byte(state),
 			Checksum:        &pb.ComputeThreatListDiffResponse_Checksum{Sha256: mustDecodeHex(t, chksum)},
@@ -325,11 +325,11 @@ func TestDatabaseUpdate(t *testing.T) {
 	mockNow := func() time.Time { return now }
 	config.now = mockNow
 
-	var resp pb.ComputeThreatListDiffResponse
+	var resp *pb.ComputeThreatListDiffResponse
 	var errResponse error
 	mockAPI := &mockAPI{
 		listUpdate: func(context.Context, pb.ThreatType, []byte, []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
-			return &resp, errResponse
+			return resp, errResponse
 		},
 	}
 
