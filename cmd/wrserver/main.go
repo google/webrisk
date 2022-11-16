@@ -23,6 +23,7 @@
 // Web Risk API over the internet.
 //
 // Usage of wrserver looks something like this:
+//
 //	             _________________
 //	            |                 |
 //	            |  Web Risk  |
@@ -66,11 +67,11 @@
 //
 // By default, the wrserver listens on localhost:8080 and serves the following
 // API endpoints:
+//
 //	/v4/threatMatches:find
 //	/v4/threatLists
 //	/status
 //	/r
-//
 //
 // Endpoint: /v4/threatMatches:find
 //
@@ -79,6 +80,7 @@
 // for those URLs. Unlike the Web Risk API, it does not require an API key.
 //
 // Example usage:
+//
 //	# Send request to server:
 //	$ curl \
 //	  -H "Content-Type: application/json" \
@@ -116,7 +118,6 @@
 //	    }]
 //	}
 //
-//
 // Endpoint: /v4/threatLists
 //
 // The endpoint returns a list of the threat lists that the wrserver is
@@ -124,6 +125,7 @@
 // API call may only be one of these types.
 //
 // Example usage:
+//
 //	# Send request to server:
 //	$ curl -X GET localhost:8080/v4/threatLists
 //
@@ -144,7 +146,6 @@
 //	    }]
 //	}
 //
-//
 // Endpoint: /status
 //
 // The status endpoint allows a client to obtain some statistical information
@@ -153,6 +154,7 @@
 // were forwarded to the Web Risk API servers.
 //
 // Example usage:
+//
 //	$ curl localhost:8080/status
 //	{
 //	    "Stats" : {
@@ -164,7 +166,6 @@
 //	    "Error" : ""
 //	}
 //
-//
 // Endpoint: /r
 //
 // The redirector endpoint allows a client to pass in a query URL.
@@ -172,6 +173,7 @@
 // If the URL is unsafe, then an interstitial warning page is shown instead.
 //
 // Example usage:
+//
 //	$ curl -i localhost:8080/r?url=http://google.com
 //	HTTP/1.1 302 Found
 //	Location: http://google.com
@@ -201,9 +203,9 @@ import (
 	"github.com/google/webrisk"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
 
-	_ "github.com/google/webrisk/cmd/wrserver/statik"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	_ "github.com/google/webrisk/cmd/wrserver/statik"
 	"github.com/rakyll/statik/fs"
 )
 
@@ -219,8 +221,8 @@ const (
 )
 
 var (
-	apiKeyFlag   = flag.String("apikey", "", "specify your Web Risk API key")
-	srvAddrFlag  = flag.String("srvaddr", "localhost:8080", "TCP network address the HTTP server should use")
+	apiKeyFlag   = flag.String("apikey", os.Getenv("APIKEY"), "specify your Web Risk API key")
+	srvAddrFlag  = flag.String("srvaddr", "0.0.0.0:8080", "TCP network address the HTTP server should use")
 	proxyFlag    = flag.String("proxy", "", "proxy to use to connect to the HTTP server")
 	databaseFlag = flag.String("db", "", "path to the Web Risk database.")
 )
