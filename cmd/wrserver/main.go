@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 // Command wrserver is an application for serving URL lookups via a simple API.
 //
 // In order to abstract away the complexities of the Web Risk API v4, the
@@ -189,7 +188,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -200,13 +198,12 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/google/webrisk"
-	pb "github.com/google/webrisk/internal/webrisk_proto"
-
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
-	_ "github.com/google/webrisk/cmd/wrserver/statik"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"github.com/rakyll/statik/fs"
+	_ "github.com/google/webrisk/cmd/wrserver/statik"
+	pb "github.com/google/webrisk/internal/webrisk_proto"
+	"github.com/google/webrisk"
 )
 
 const (
@@ -228,9 +225,10 @@ var (
 )
 
 var threatTemplate = map[webrisk.ThreatType]string{
-	webrisk.ThreatTypeMalware:           "/malware.tmpl",
-	webrisk.ThreatTypeUnwantedSoftware:  "/unwanted.tmpl",
-	webrisk.ThreatTypeSocialEngineering: "/social_engineering.tmpl",
+	webrisk.ThreatTypeMalware:                   "/malware.tmpl",
+	webrisk.ThreatTypeUnwantedSoftware:          "/unwanted.tmpl",
+	webrisk.ThreatTypeSocialEngineering:         "/social_engineering.tmpl",
+	webrisk.ThreatTypeSocialEngineeringExtended: "/social_engineering.tmpl",
 }
 
 const usage = `wrserver: starts a Web Risk API proxy server.
@@ -265,7 +263,11 @@ func unmarshal(req *http.Request, pbReq proto.Message) (string, error) {
 
 	switch req.Header.Get("Content-Type") {
 	case mimeJSON:
-		if err := jsonpb.Unmarshal(req.Body, pbReq); err != nil {
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			return mime, err
+		}
+		if err := protojson.Unmarshal(body, pbReq); err != nil {
 			return mime, err
 		}
 	case mimeProto:
@@ -293,12 +295,11 @@ func marshal(resp http.ResponseWriter, pbResp proto.Message, mime string) error 
 			return err
 		}
 	case mimeJSON:
-		var m jsonpb.Marshaler
-		var b bytes.Buffer
-		if err := m.Marshal(&b, pbResp); err != nil {
+		b, err := protojson.Marshal(pbResp)
+		if err != nil {
 			return err
 		}
-		if _, err := resp.Write(b.Bytes()); err != nil {
+		if _, err := resp.Write(b); err != nil {
 			return err
 		}
 	default:
@@ -308,7 +309,7 @@ func marshal(resp http.ResponseWriter, pbResp proto.Message, mime string) error 
 }
 
 // serveStatus writes a simple JSON with server status information to resp.
-func serveStatus(resp http.ResponseWriter, req *http.Request, sb *webrisk.WebriskClient) {
+func serveStatus(resp http.ResponseWriter, req *http.Request, sb *webrisk.UpdateClient) {
 	stats, sbErr := sb.Status()
 	errStr := ""
 	if sbErr != nil {
@@ -330,7 +331,7 @@ func serveStatus(resp http.ResponseWriter, req *http.Request, sb *webrisk.Webris
 // API endpoint. This allows clients to look up whether a given URL is safe.
 // Unlike the official API, it does not require an API key.
 // It supports both JSON and ProtoBuf.
-func serveLookups(resp http.ResponseWriter, req *http.Request, sb *webrisk.WebriskClient) {
+func serveLookups(resp http.ResponseWriter, req *http.Request, sb *webrisk.UpdateClient) {
 	if req.Method != "POST" {
 		http.Error(resp, "invalid method", http.StatusBadRequest)
 		return
@@ -400,7 +401,7 @@ func parseTemplates(fs http.FileSystem, t *template.Template, paths ...string) (
 
 // serveRedirector implements a basic HTTP redirector that will filter out
 // redirect URLs that are unsafe according to the Web Risk API.
-func serveRedirector(resp http.ResponseWriter, req *http.Request, sb *webrisk.WebriskClient, fs http.FileSystem) {
+func serveRedirector(resp http.ResponseWriter, req *http.Request, sb *webrisk.UpdateClient, fs http.FileSystem) {
 	rawURL := req.URL.Query().Get("url")
 	if rawURL == "" || req.URL.Path != "/r" {
 		http.NotFound(resp, req)
@@ -429,7 +430,7 @@ func serveRedirector(resp http.ResponseWriter, req *http.Request, sb *webrisk.We
 				http.Error(resp, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			err = t.Execute(resp, map[string]interface{}{
+			err = t.Execute(resp, map[string]any{
 				"Threat": threat,
 				"Url":    parsedURL})
 			if err != nil {
@@ -438,7 +439,6 @@ func serveRedirector(resp http.ResponseWriter, req *http.Request, sb *webrisk.We
 			return
 		}
 	}
-	http.Error(resp, err.Error(), http.StatusInternalServerError)
 }
 
 func main() {
@@ -457,7 +457,7 @@ func main() {
 		DBPath:   *databaseFlag,
 		Logger:   os.Stderr,
 	}
-	sb, err := webrisk.NewWebriskClient(conf)
+	sb, err := webrisk.NewUpdateClient(conf)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to initialize Web Risk client: ", err)
 		os.Exit(1)

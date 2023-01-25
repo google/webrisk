@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,13 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 // Package webrisk implements a client for the Web Risk API v4.
-// API v4 emphasizes efficient usage of the network for bandwidth-constrained
-// applications such as mobile devices. It achieves this by maintaining a small
-// portion of the server state locally such that some queries can be answered
-// immediately without any network requests. Thus, fewer API calls made, means
-// less bandwidth is used.
 //
 // At a high-level, the implementation does the following:
 //
@@ -83,13 +77,13 @@ const (
 	// DefaultServerURL is the default URL for the Web Risk API.
 	DefaultServerURL = "webrisk.googleapis.com"
 
-	// DefaultUpdatePeriod is the default period for how often WebriskClient will
+	// DefaultUpdatePeriod is the default period for how often UpdateClient will
 	// reload its blocklist database.
 	DefaultUpdatePeriod = 30 * time.Minute
 
-	// DefaultID and DefaultVersion are the default client ID and Version
-	// strings to send with every API call.
-	DefaultID      = "GoWebriskClient"
+	// DefaultID is the client ID sent with each API call.
+	DefaultID = "WebRiskContainer"
+	// DefaultVersion is the Version sent with each API call.
 	DefaultVersion = "1.0.0"
 
 	// DefaultRequestTimeout is the default amount of time a single
@@ -111,20 +105,20 @@ func (tt ThreatType) String() string { return pb.ThreatType(tt).String() }
 
 // List of ThreatType constants.
 const (
-	ThreatTypeUnspecified       = ThreatType(pb.ThreatType_THREAT_TYPE_UNSPECIFIED)
-	ThreatTypeMalware           = ThreatType(pb.ThreatType_MALWARE)
-	ThreatTypeSocialEngineering = ThreatType(pb.ThreatType_SOCIAL_ENGINEERING)
-	ThreatTypeUnwantedSoftware  = ThreatType(pb.ThreatType_UNWANTED_SOFTWARE)
+	ThreatTypeUnspecified               = ThreatType(pb.ThreatType_THREAT_TYPE_UNSPECIFIED)
+	ThreatTypeMalware                   = ThreatType(pb.ThreatType_MALWARE)
+	ThreatTypeSocialEngineering         = ThreatType(pb.ThreatType_SOCIAL_ENGINEERING)
+	ThreatTypeUnwantedSoftware          = ThreatType(pb.ThreatType_UNWANTED_SOFTWARE)
 	ThreatTypeSocialEngineeringExtended = ThreatType(pb.ThreatType_SOCIAL_ENGINEERING_EXTENDED_COVERAGE)
 )
 
-// DefaultThreatLists is the default list of threat lists that WebriskClient
-// will maintain. Do not modify this variable.
+// DefaultThreatLists is the default list of threat lists that UpdateClient
+// will maintain. If you modify this variable, you must refresh all saved database files.
 var DefaultThreatLists = []ThreatType{
 	ThreatTypeMalware,
 	ThreatTypeSocialEngineering,
-	ThreatTypeSocialEngineeringExtended,
 	ThreatTypeUnwantedSoftware,
+	ThreatTypeSocialEngineeringExtended,
 }
 
 // A URLThreat is a specialized ThreatType for the URL threat
@@ -134,7 +128,7 @@ type URLThreat struct {
 	ThreatType
 }
 
-// Config sets up the WebriskClient object.
+// Config sets up the UpdateClient object.
 type Config struct {
 	// ServerURL is the URL for the Web Risk API server.
 	// If empty, it defaults to DefaultServerURL.
@@ -156,16 +150,16 @@ type Config struct {
 	Version string
 
 	// DBPath is a path to a persistent database file.
-	// If empty, WebriskClient operates in a non-persistent manner.
+	// If empty, UpdateClient operates in a non-persistent manner.
 	// This means that blocklist results will not be cached beyond the lifetime
-	// of the WebriskClient object.
+	// of the UpdateClient object.
 	DBPath string
 
 	// UpdatePeriod determines how often we update the internal list database.
 	// If zero value, it defaults to DefaultUpdatePeriod.
 	UpdatePeriod time.Duration
 
-	// ThreatLists determines which threat lists that WebriskClient should
+	// ThreatLists determines which threat lists that UpdateClient should
 	// subscribe to. The threats reported by LookupURLs will only be ones that
 	// are specified by this list.
 	// If empty, it defaults to DefaultThreatLists.
@@ -174,7 +168,7 @@ type Config struct {
 	// RequestTimeout determines the timeout value for the http client.
 	RequestTimeout time.Duration
 
-	// Logger is an io.Writer that allows WebriskClient to write debug information
+	// Logger is an io.Writer that allows UpdateClient to write debug information
 	// intended for human consumption.
 	// If empty, no logs will be written.
 	Logger io.Writer
@@ -214,13 +208,13 @@ func (c Config) copy() Config {
 	return c2
 }
 
-// WebriskClient is a client implementation of API v4.
+// UpdateClient is a client implementation of API v4.
 //
 // It provides a set of lookup methods that allows the user to query whether
 // certain entries are considered a threat. The implementation manages all of
 // local database and caching that would normally be needed to interact
 // with the API server.
-type WebriskClient struct {
+type UpdateClient struct {
 	stats  Stats // Must be first for 64-bit alignment on non 64-bit systems.
 	config Config
 	api    api
@@ -235,7 +229,7 @@ type WebriskClient struct {
 	done   chan bool // Signals that the updater routine should stop
 }
 
-// Stats records statistics regarding WebriskClient's operation.
+// Stats records statistics regarding UpdateClient's operation.
 type Stats struct {
 	QueriesByDatabase int64         // Number of queries satisfied by the database alone
 	QueriesByCache    int64         // Number of queries satisfied by the cache alone
@@ -244,11 +238,11 @@ type Stats struct {
 	DatabaseUpdateLag time.Duration // Duration since last *missed* update. 0 if next update is in the future.
 }
 
-// NewWebriskClient creates a new WebriskClient.
+// NewUpdateClient creates a new UpdateClient.
 //
 // The conf struct allows the user to configure many aspects of the
-// WebriskClient's operation.
-func NewWebriskClient(conf Config) (*WebriskClient, error) {
+// UpdateClient's operation.
+func NewUpdateClient(conf Config) (*UpdateClient, error) {
 	conf = conf.copy()
 	if !conf.setDefaults() {
 		return nil, errors.New("webrisk: invalid configuration")
@@ -265,7 +259,7 @@ func NewWebriskClient(conf Config) (*WebriskClient, error) {
 	if conf.now == nil {
 		conf.now = time.Now
 	}
-	wr := &WebriskClient{
+	wr := &UpdateClient{
 		config: conf,
 		api:    conf.api,
 		c:      cache{now: conf.now},
@@ -305,11 +299,11 @@ func NewWebriskClient(conf Config) (*WebriskClient, error) {
 	return wr, nil
 }
 
-// Status reports the status of WebriskClient. It returns some statistics
+// Status reports the status of UpdateClient. It returns some statistics
 // regarding the operation, and an error representing the status of its
 // internal state. Most errors are transient and will recover themselves
 // after some period.
-func (wr *WebriskClient) Status() (Stats, error) {
+func (wr *UpdateClient) Status() (Stats, error) {
 	stats := Stats{
 		QueriesByDatabase: atomic.LoadInt64(&wr.stats.QueriesByDatabase),
 		QueriesByCache:    atomic.LoadInt64(&wr.stats.QueriesByCache),
@@ -322,8 +316,8 @@ func (wr *WebriskClient) Status() (Stats, error) {
 
 // WaitUntilReady blocks until the database is not in an error state.
 // Returns nil when the database is ready. Returns an error if the provided
-// context is canceled or if the WebriskClient instance is Closed.
-func (wr *WebriskClient) WaitUntilReady(ctx context.Context) error {
+// context is canceled or if the UpdateClient instance is Closed.
+func (wr *UpdateClient) WaitUntilReady(ctx context.Context) error {
 	if atomic.LoadUint32(&wr.closed) == 1 {
 		return errClosed
 	}
@@ -351,7 +345,7 @@ func (wr *WebriskClient) WaitUntilReady(ctx context.Context) error {
 //
 // If an error occurs, the caller should treat the threats list returned as a
 // best-effort response to the query. The results may be stale or be partial.
-func (wr *WebriskClient) LookupURLs(urls []string) (threats [][]URLThreat, err error) {
+func (wr *UpdateClient) LookupURLs(urls []string) (threats [][]URLThreat, err error) {
 	threats, err = wr.LookupURLsContext(context.Background(), urls)
 	return threats, err
 }
@@ -361,7 +355,7 @@ func (wr *WebriskClient) LookupURLs(urls []string) (threats [][]URLThreat, err e
 // elapsed. It is safe to call this method concurrently.
 //
 // See LookupURLs for details on the returned results.
-func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (threats [][]URLThreat, err error) {
+func (wr *UpdateClient) LookupURLsContext(ctx context.Context, urls []string) (threats [][]URLThreat, err error) {
 	ctx, cancel := context.WithTimeout(ctx, wr.config.RequestTimeout)
 	defer cancel()
 
@@ -487,13 +481,13 @@ func (wr *WebriskClient) LookupURLsContext(ctx context.Context, urls []string) (
 }
 
 // TODO: Add other types of lookup when available.
-//	func (wr *WebriskClient) LookupBinaries(digests []string) (threats []BinaryThreat, err error)
-//	func (wr *WebriskClient) LookupAddresses(addrs []string) (threats [][]AddressThreat, err error)
+//	func (wr *UpdateClient) LookupBinaries(digests []string) (threats []BinaryThreat, err error)
+//	func (wr *UpdateClient) LookupAddresses(addrs []string) (threats [][]AddressThreat, err error)
 
 // updater is a blocking method that periodically updates the local database.
 // This should be run as a separate goroutine and will be automatically stopped
 // when wr.Close is called.
-func (wr *WebriskClient) updater(delay time.Duration) {
+func (wr *UpdateClient) updater(delay time.Duration) {
 	for {
 		wr.log.Printf("Next update in %v", delay)
 		select {
@@ -514,7 +508,7 @@ func (wr *WebriskClient) updater(delay time.Duration) {
 
 // Close cleans up all resources.
 // This method must not be called concurrently with other lookup methods.
-func (wr *WebriskClient) Close() error {
+func (wr *UpdateClient) Close() error {
 	if atomic.LoadUint32(&wr.closed) == 0 {
 		atomic.StoreUint32(&wr.closed, 1)
 		close(wr.done)

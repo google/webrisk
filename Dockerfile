@@ -8,9 +8,10 @@ RUN go mod download && go mod verify
 
 COPY . .
 
-# Uncomment the lines below to vet and test this container before building.
-# RUN go vet -v
-# RUN go test -v
+# Analyze our Go code and run all tests. To speed up building, such as during
+# development, consider commenting out these lines.
+RUN go vet -v
+RUN go test -v
 
 RUN CGO_ENABLED=0 go build -o /go/bin/wrserver cmd/wrserver/main.go
 
@@ -19,5 +20,5 @@ FROM gcr.io/distroless/static-debian11 as wrserver
 COPY --from=build /go/bin/wrserver /
 
 # The APIKEY Environmental Variable should be passed in at runtime. Example:
-# docker run -e APIKEY=XXXXXXXXXXXXXXXXXXXXX -p 8080:8080
+# docker run -e APIKEY=XXXXXXXXXXXXXXXXXXXXX -p 8080:8080 <container label>
 ENTRYPOINT [ "/wrserver"]

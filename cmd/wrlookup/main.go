@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 // Command wrlookup is a tool for looking up URLs via the command-line.
 //
 // The tool reads one URL per line from STDIN and checks every URL against
@@ -19,9 +18,11 @@
 // If an error occurred, debug information may be printed to STDERR.
 //
 // To build the tool:
+//
 //	$ go get github.com/google/webrisk/cmd/wrlookup
 //
 // Example usage:
+//
 //	$ wrlookup -apikey $APIKEY
 //	https://google.com
 //	Safe URL: https://google.com
@@ -33,8 +34,9 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/google/webrisk"
 	"os"
+
+	"github.com/google/webrisk"
 )
 
 var (
@@ -77,7 +79,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "No -apikey specified")
 		os.Exit(codeInvalid)
 	}
-	sb, err := webrisk.NewWebriskClient(webrisk.Config{
+	sb, err := webrisk.NewUpdateClient(webrisk.Config{
 		APIKey:    *apiKeyFlag,
 		DBPath:    *databaseFlag,
 		Logger:    os.Stderr,
