@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import (
 	"time"
 
 	pb "github.com/google/webrisk/internal/webrisk_proto"
-	pt "github.com/golang/protobuf/ptypes"
 )
 
 // jitter is the maximum amount of time that we expect an API list update to
@@ -44,17 +43,17 @@ const (
 // order to provide protection for the latest threats.
 //
 // The process for updating the database is as follows:
-//	* At startup, if a database file is provided, then load it. If loaded
-//	properly (not corrupted and not stale), then set tfu as the contents.
-//	Otherwise, pull a new threat list from the Web Risk API.
-//	* Periodically, synchronize the database with the Web Risk API.
-//	This uses the Version Token fields to update only parts of the threat list that have
-//	changed since the last sync.
-//	* Anytime tfu is updated, generate a new tfl.
+//   - At startup, if a database file is provided, then load it. If loaded
+//     properly (not corrupted and not stale), then set tfu as the contents.
+//     Otherwise, pull a new threat list from the Web Risk API.
+//   - Periodically, synchronize the database with the Web Risk API.
+//     This uses the Version Token fields to update only parts of the threat list that have
+//     changed since the last sync.
+//   - Anytime tfu is updated, generate a new tfl.
 //
 // The process for querying the database is as follows:
-//	* Check if the requested full hash matches any partial hash in tfl.
-//	If a match is found, return a set of ThreatTypes with a partial match.
+//   - Check if the requested full hash matches any partial hash in tfl.
+//     If a match is found, return a set of ThreatTypes with a partial match.
 type database struct {
 	ml sync.RWMutex // Protects tfl, err, and last
 	// threatsForLookup maps ThreatTypes to sets of partial hashes.
@@ -228,7 +227,7 @@ func (db *database) Update(ctx context.Context, api api) (time.Duration, bool) {
 		}
 		resps = append(resps, resp)
 		if resp.RecommendedNextDiff != nil {
-			ndiff, _ := pt.Timestamp(resp.RecommendedNextDiff)
+			ndiff := resp.RecommendedNextDiff.AsTime()
 			serverMinWait := time.Duration(ndiff.Sub(time.Now()))
 			if serverMinWait > nextUpdateWait {
 				nextUpdateWait = serverMinWait

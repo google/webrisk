@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/hex"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"runtime"
 	"sync"
 	"testing"
 
+	"google.golang.org/protobuf/proto"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
-	"github.com/golang/protobuf/proto"
 )
 
 var (
@@ -32,15 +32,33 @@ var (
 	loadOnce         sync.Once
 )
 
-func getTestHashes() [][]hashPrefix {
+func getTestHashes(t *testing.T) [][]hashPrefix {
 	loadOnce.Do(func() {
-		b, err := ioutil.ReadFile("testdata/hashes.gob")
+		t.Helper()
+
+		b, err := os.ReadFile("testdata/hashes.gob")
 		if err != nil {
-			panic(err)
+			t.Fatalf("Error reading file %v - err: %v - result: %v", "testdata/hashes.gob", err, b)
 		}
 		r := gob.NewDecoder(bytes.NewReader(b))
 		if err := r.Decode(&testHashesCached); err != nil {
-			panic(err)
+			t.Fatalf("Error decoding .gob: %v", err)
+		}
+	})
+	return testHashesCached
+}
+
+func getBenchmarkHashes(bnch *testing.B) [][]hashPrefix {
+	loadOnce.Do(func() {
+		bnch.Helper()
+
+		b, err := os.ReadFile("testdata/hashes.gob")
+		if err != nil {
+			bnch.Fatalf("Error reading file %v - err: %v - result: %v", "testdata/hashes.gob", err, b)
+		}
+		r := gob.NewDecoder(bytes.NewReader(b))
+		if err := r.Decode(&testHashesCached); err != nil {
+			bnch.Fatalf("Error decoding .gob: %v", err)
 		}
 	})
 	return testHashesCached
@@ -104,7 +122,7 @@ func TestHashFromPattern(t *testing.T) {
 }
 
 func TestHashSet(t *testing.T) {
-	var testHashes = getTestHashes()
+	var testHashes = getTestHashes(t)
 
 	type hashQuery struct {
 		hash hashPrefix
@@ -174,16 +192,16 @@ func TestHashSet(t *testing.T) {
 }
 
 func BenchmarkHashSet(b *testing.B) {
-	var testHashes = getTestHashes()
+	var benchmarkHashes = getBenchmarkHashes(b)
 
 	var queries []hashPrefix
-	for _, h := range testHashes[1] {
+	for _, h := range benchmarkHashes[1] {
 		queries = append(queries, "header"+h)
 		queries = append(queries, h+"footer")
 	}
 
 	var hs hashSet
-	hs.Import(testHashes[1])
+	hs.Import(benchmarkHashes[1])
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, h := range queries {
@@ -193,7 +211,7 @@ func BenchmarkHashSet(b *testing.B) {
 }
 
 func BenchmarkHashSetMemory(b *testing.B) {
-	var testHashes = getTestHashes()
+	var benchmarkHashes = getBenchmarkHashes(b)
 
 	var ms1, ms2 runtime.MemStats
 	runtime.GC()
@@ -204,12 +222,12 @@ func BenchmarkHashSetMemory(b *testing.B) {
 	var hs hashSet
 	for i := 0; i < b.N; i++ {
 		hs = hashSet{}
-		hs.Import(testHashes[1])
+		hs.Import(benchmarkHashes[1])
 	}
 
 	runtime.GC()
 	runtime.ReadMemStats(&ms2)
-	b.Logf("mem_alloc: %dB, hashes: %dx", ms2.Alloc-ms1.Alloc, len(testHashes[1]))
+	b.Logf("mem_alloc: %dB, hashes: %dx", ms2.Alloc-ms1.Alloc, len(benchmarkHashes[1]))
 }
 
 func TestDecodeHashes(t *testing.T) {

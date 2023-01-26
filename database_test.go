@@ -1,10 +1,10 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//	https://www.apache.org/licenses/LICENSE-2.0
+//     https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,8 @@ import (
 	"testing"
 	"time"
 
-	pt "github.com/golang/protobuf/ptypes"
+	timepb "google.golang.org/protobuf/types/known/timestamppb"
+
 	pb "github.com/google/webrisk/internal/webrisk_proto"
 )
 
@@ -291,7 +292,7 @@ func TestDatabaseUpdate(t *testing.T) {
 		logger = log.New(ioutil.Discard, "", 0)
 	)
 
-	// Helper function to aid in the construction on responses.
+	// Helper function to aid in the construction of responses.
 	newResp := func(td ThreatType, rtype int, dels []int32, adds []string, state string, chksum string) *pb.ComputeThreatListDiffResponse {
 		resp := &pb.ComputeThreatListDiffResponse{
 			ResponseType:    pb.ComputeThreatListDiffResponse_ResponseType(rtype),
@@ -355,7 +356,7 @@ func TestDatabaseUpdate(t *testing.T) {
 	now = now.Add(time.Hour)
 	resp = newResp(ThreatTypeMalware, full, nil, []string{"aaaa", "0421e", "666666", "7777777", "88888888"},
 		"d1", "a3b93fac424834c2447e2dbe5db3ec8553519777523907ea310e207f556a7637")
-	ts, _ := pt.TimestampProto(time.Now().Add(2000 * time.Second))
+	ts := timepb.New(time.Now().Add(2000 * time.Second))
 	resp.RecommendedNextDiff = ts
 
 	delay, updated = db.Update(context.Background(), mockAPI)

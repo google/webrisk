@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
 package webrisk
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
 	pb "github.com/google/webrisk/internal/webrisk_proto"
-	pt "github.com/golang/protobuf/ptypes"
 )
 
 type cacheResult int
@@ -85,17 +83,13 @@ func (c *cache) Update(req *pb.SearchHashesRequest, resp *pb.SearchHashesRespons
 			c.pttls[fullHash] = make(map[ThreatType]time.Time)
 		}
 		for _, tt := range threat.ThreatTypes {
-			var err error
-			c.pttls[fullHash][ThreatType(tt)], err = pt.Timestamp(threat.ExpireTime)
-			if err != nil {
-				return fmt.Errorf("pt.Timestamp: %v", err)
-			}
+			c.pttls[fullHash][ThreatType(tt)] = threat.ExpireTime.AsTime()
 		}
 	}
 
 	// Insert negative TTLs for partial hashes.
 	if resp.GetNegativeExpireTime() != nil {
-		nttl, _ := pt.Timestamp(resp.GetNegativeExpireTime())
+		nttl := resp.GetNegativeExpireTime().AsTime()
 		partialHash := hashPrefix(req.HashPrefix)
 		c.nttls[partialHash] = nttl
 	}
