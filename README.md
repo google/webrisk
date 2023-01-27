@@ -10,83 +10,176 @@ program is a command line service that can also be used to check URLs.
 
 This **README.md** is a quickstart guide on how to build, deploy, and use the
 WebRisk Go package. It can be used out-of-the-box. The GoDoc and API
-documentation provide more details on fine tuning the parameters if desired.
+documentation in the .go source files provide more details on fine tuning the
+parameters if desired.
 
+This client implements the [Update API](https://cloud.google.com/web-risk/docs/update-api),
+and includes a simplified Dockerfile. It is not necessary to run as a container
+to test the client or new blocklist.
 
-# How to Build
+This container branch also includes support for the
+`SOCIAL_ENGINEERING_EXTENDED_COVERAGE` blocklist. 
 
-To download and install from the source, run the following command:
+# Enable Web Risk
+
+To begin using Web Risk, you will need a GCP Account and a project to work in.
+
+1. Enable the Web Risk API (requires Billing).
+
+2. Generate an API Key.
+
+# Docker Container App Quickstart
+
+We have included a Dockerfile to accelerate and simplify onboarding. This
+container wraps the `wrserver` binary detailed below.
+
+If you haven't already, you must install [Docker](https://www.docker.com/).
+
+## Clone and Build Container
+
+Building the container is straightforward.
 
 ```
-go get github.com/google/webrisk
+# clone this repo into a local directory & switch to the container branch
+> git clone -b container https://github.com/google/webrisk && cd webrisk
+
+# build the a docker container
+> docker build -t wr-container .
 ```
 
-The programs below execute from your `$GOPATH/bin` folder.
-Add that to your `$PATH` for convenience:
+## Run Container
+
+We supply the `APIKEY` as an environmental variable to the container at runtime
+so that the API Key is not revealed as part of the docker file or in `docker ps`.
+This example also provides a port binding.
 
 ```
-export PATH=$PATH:$GOPATH/bin
+> docker run -e APIKEY=XXXXXXXXXXXXXXXXXXXXXXX -p 8080:8080 wr-container
 ```
 
-The program expects an API key as a parameter, export it with the following
-command for later use:
+`wrserver` defaults to port 8080, but you can bind any port on the host machine.
+See the [Docker documentation](https://docs.docker.com/config/containers/container-networking/)
+for details.
+
+# Go Binary Quickstart | `wrlookup` example
+
+The Go Client can be compiled and run directly without Docker. In this example
+we will use that to run the `wrlookup` binary that takes URLs from `STDIN` and
+outputs to `STDOUT`.
+
+Before compiling from source you should [install Go](https://go.dev/doc/install)
+and have some familiarity with Go development. See [here](https://go.dev/doc/tutorial/getting-started)
+for a good place to get started.
+
+## Clone Source & Install Dependencies
+
+To download and install this branch from the source, run the following command:
 
 ```
-export APIKEY=Your Api Key
+# clone this repo into a local directory & switch to the container branch
+> git clone -b container https://github.com/google/webrisk && cd webrisk
+
+# install dependencies
+.../webrisk> go install
 ```
 
-# Proxy Server
+## Build and Execute `wrlookup`
 
-The `wrserver` server binary runs a WebRisk API lookup proxy that allows
-users to check URLs via a simple JSON API.
+After installing dependencies, you can build and run `wrlookup`
 
-1.	Once the Go environment is setup, run the following command with your API key:
+```
+# builds a wrlookup binary in the current directory
+.../webrisk> go build -o wrlookup cmd/wrlookup/main.go
+
+
+# run the binary and supply an API Key
+.../webrisk> ./wrlookup -apikey=XXXXXXXXXXXXXXXXXXXXXXX
+```
+
+You should see some output similar to below as `wrlookup` starts up.
+
+```
+webrisk: 2023/01/27 19:36:46 database.go:110: no database file specified
+webrisk: 2023/01/27 19:36:53 database.go:384: database is now healthy
+webrisk: 2023/01/27 19:36:53 webrisk_client.go:492: Next update in 30m29s
+```
+
+`wrlookup` will take any URLs from `STDIN`. Test your configuration with a sample:
+
+```
+http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/ #input
+Unsafe URL: [MALWARE] # output
+```
+
+An incorrect API Key or other auth error might result in an error as below:
+
+```
+webrisk: 2023/01/27 19:36:13 database.go:217: ListUpdate failure (1): webrisk: unexpected server response code: 400
+```
+
+# Using `wrserver`
+
+`wrserver` runs a WebRisk API lookup proxy that allows users to check URLs via
+a simple JSON API. This local API will use the API key supplied by the Docker
+container or the command line that runs the binary.
+
+1.	Start the `wrserver` by either running the container or binary.
 
 	```
-	go get github.com/google/webrisk/cmd/wrserver
-	wrserver -apikey $APIKEY
+	# run in docker
+	> docker run -e APIKEY=XXXXXXXXXXXXXXXXXXXXXXX -p 8080:8080 <container_name>
+
+	# run from CLI, compile as above but use `wrserver` in place of `wrlookup`
+	> ./wrserver -apikey=XXXXXXXXXXXXXXXXXXXXXXX
 	```
 
-	With the default settings this will start a local server at **127.0.0.1:8080**.
+	With the default settings this will start a local server at **0.0.0.0:8080**.
 
-2.  The server also uses an URL redirector (listening on `/r`) to show an interstitial for anything marked unsafe.  
-If the URL is safe, the client is automatically redirected to the target. Else, an interstitial warning page is shown as recommended by Web Risk.  
-Try these URLs:
+2.  `wrserver` serves a URL redirector listening on `/r` which will show an interstitial for anything marked unsafe.
+
+	If the URL is safe, the client is automatically redirected to the target. 
+	Otherwise an interstitial warning page is shown as recommended by Web Risk.  
+	Try these URLs:
 
 	```
-	127.0.0.1:8080/r?url=http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/
-	127.0.0.1:8080/r?url=http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/SOCIAL_ENGINEERING/URL/
-	127.0.0.1:8080/r?url=http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/UNWANTED_SOFTWARE/URL/
-	127.0.0.1:8080/r?url=http://www.google.com/
+	0.0.0.0:8080/r?url=http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/
+	0.0.0.0:8080/r?url=http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/SOCIAL_ENGINEERING/URL/
+	0.0.0.0:8080/r?url=http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/UNWANTED_SOFTWARE/URL/
+	0.0.0.0:8080/r?url=http://www.google.com/
 	```
 
-3.	The server also has a lightweight implementation of the API v4 threatMatches endpoint.  
-To use the local proxy server to check a URL, send a POST request to `127.0.0.1:8080/v1beta1/uris:search` with the following JSON body:
+3.	The server also has a lightweight implementation of a [Web Risk Lookup API](https://cloud.google.com/web-risk/docs/lookup-api)-like endpoint at `v1/uris:search`.
+To use the local endpoint to check a URL, send a POST request to `0.0.0.0:8080/v1/uris:search` with the a JSON body similar to the following.
 
 	```json
 	{
-          "uri":"http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/",
-          "threatTypes":[
-            "MALWARE"
-          ]
-        }
+    	"uri":"http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/",
+   		"threatTypes":[
+      		"MALWARE"
+    	]
+  }
 	```
 
-# Command-Line Lookup
+4. Test with the following cURL command:
 
-The `wrlookup` command-line binary is another example of how the Go Safe
-Browsing library can be used to protect users from unsafe URLs. This
-command-line tool filters unsafe URLs piped via STDIN. Example usage:
+	```
+	> curl -X POST 0.0.0.0:8080/v1/uris:search \ 
+		-H 'Content-Type: application/json' \ 
+		-d '{"uri":"http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/", "threatTypes":["MALWARE"]}'
+	```
 
-```
-$ go get github.com/google/webrisk/cmd/wrlookup
-$ echo "http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/" | wrlookup -apikey=$APIKEY
-```
+There are two significant differences between this local endpoint and the
+public `v1/uris:search` endpoint:
+
+  - The public endpoint accepts `GET` requests instead of `POST` requests.
+  - The local `wrserver` endpoint uses the privacy-preserving and lower latency
+	[Update API](https://cloud.google.com/web-risk/docs/update-api) making it better
+	suited for higher-demand use cases.
 
 
-# WebRisk System Test
+## WebRisk System Test
 To perform an end-to-end test on the package with the WebRisk backend,
-run the following command after exporting your API key:
+run the following command after exporting your API key as $APIKEY:
 
 ```
 go test github.com/google/webrisk -v -run TestWebriskClient
