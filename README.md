@@ -1,7 +1,7 @@
 # Reference Implementation for the Usage of Google Cloud WebRisk APIs (Beta)
 
 The `webrisk` Go package can be used with the
-[Google Cloud WebRisk APIs (Beta)](https://cloud.google.com/web-risk/)
+[Google Cloud WebRisk APIs](https://cloud.google.com/web-risk/)
 to access the Google Cloud WebRisk lists of unsafe web resources. Inside the
 `cmd` sub-directory, you can find two programs: `wrlookup` and `wrserver`. The
 `wrserver` program creates a proxy local server to check URLs and a URL
@@ -154,9 +154,7 @@ To use the local endpoint to check a URL, send a POST request to `0.0.0.0:8080/v
 	```json
 	{
     	"uri":"http://testsafebrowsing.appspot.com/apiv4/ANY_PLATFORM/MALWARE/URL/",
-   		"threatTypes":[
-      		"MALWARE"
-    	]
+   		"threatTypes":["MALWARE"]
   }
 	```
 
