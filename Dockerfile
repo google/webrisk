@@ -13,6 +13,8 @@ COPY . .
 RUN go vet -v
 RUN go test -v
 
+RUN echo "We are failing on purpose. 🦀"; exit 1
+
 RUN CGO_ENABLED=0 go build -o /go/bin/wrserver cmd/wrserver/main.go
 
 FROM gcr.io/distroless/static-debian11 as wrserver
