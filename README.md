@@ -1,4 +1,4 @@
-# Reference Implementation for the Usage of Google Cloud WebRisk APIs (Beta)
+# Reference Implementation for the Usage of Google Cloud WebRisk APIs
 
 The `webrisk` Go package can be used with the
 [Google Cloud WebRisk APIs](https://cloud.google.com/web-risk/)
@@ -44,7 +44,7 @@ Building the container is straightforward.
 > git clone -b container https://github.com/google/webrisk && cd webrisk
 
 # build the a docker container
-> docker build -t wr-container .
+> docker build --tag wr-container .
 ```
 
 ## Run Container
