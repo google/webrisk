@@ -3,7 +3,7 @@ name: Docker build
 on: [push]
 
 jobs:
-  build:
+  docker-build:
     # we are using ubuntu as it ships with docker pre-installed
     runs-on: ubuntu-latest
     steps:
