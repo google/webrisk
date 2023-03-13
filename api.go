@@ -35,6 +35,7 @@ const (
 	supportedCompressionsString = "constraints.supported_compressions"
 	hashPrefixString            = "hash_prefix"
 	threatTypesString           = "threat_types"
+	userAgentString             = "Webrisk-Client/0.2.0"
 )
 
 // The api interface specifies wrappers around the Web Risk API.
@@ -88,7 +89,7 @@ func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Mes
 		return err
 	}
 	httpReq.Header.Add("Content-Type", "application/json")
-	httpReq.Header.Add("User-Agent", "Webrisk-Client/0.1.3")
+	httpReq.Header.Add("User-Agent", userAgentString)
 	httpReq = httpReq.WithContext(ctx)
 	httpResp, err := a.client.Do(httpReq)
 	if err != nil {
