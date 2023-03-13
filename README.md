@@ -57,16 +57,16 @@ container wraps the `wrserver` binary detailed [below](#using-wrserver).
 
 Building the container is straightforward.
 
-First, clone this repo into a local directory & switch to the container branch
+First, clone this repo into a local directory.
 
 ```
-git clone -b container https://github.com/google/webrisk && cd webrisk
+git clone https://github.com/google/webrisk && cd webrisk
 ```
 
 Build the container. This will run all tests before compiling `wrserver` into
 a distroless container.
 ```
-docker build -tag wr-container .
+docker build --tag wr-container .
 ```
 
 ## Run Container
@@ -100,11 +100,11 @@ for a good place to get started.
 
 To download and install this branch from the source, run the following commands.
 
-First clone this repo into a local directory, switch to the container branch,
-and switch to the webrisk directory.
+First clone this repo into a local directory and switch to the webrisk
+directory.
 
 ```
-git clone -b container https://github.com/google/webrisk && cd webrisk
+git clone https://github.com/google/webrisk && cd webrisk
 ```
 
 Next, install dependencies.
@@ -173,8 +173,7 @@ the following.
 
 ```json
 {
-  "uri":"http://testsafebrowsing.appspot.com/s/social_engineering_extended_coverage.html",
-  "threatTypes":["MALWARE","SOCIAL_ENGINEERING","SOCIAL_ENGINEERING_EXTENDED_COVERAGE"]
+  "uri":"http://testsafebrowsing.appspot.com/s/social_engineering_extended_coverage.html"
 }
 ```
 
@@ -182,7 +181,7 @@ A sample cURL command:
 
 ```
 curl -H 'Content-Type: application/json' \
-	-d '{"uri":"http://testsafebrowsing.appspot.com/s/social_engineering_extended_coverage.html","threatTypes":["MALWARE","SOCIAL_ENGINEERING","SOCIAL_ENGINEERING_EXTENDED_COVERAGE"]}' \
+	-d '{"uri":"http://testsafebrowsing.appspot.com/s/social_engineering_extended_coverage.html"}' \
 	-X POST '0.0.0.0:8080/v1/uris:search'
 ```
 
