@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -65,10 +65,10 @@ func (p hashPrefixes) Sort()              { sort.Sort(p) }
 
 // Validate checks that the list of hash prefixes is valid. It checks the
 // following parameters:
-//	* That each hash prefix is valid; that is, it has a length within
-//	minHashPrefixLength and maxHashPrefixLength.
-//	* That the list of prefixes is sorted.
-//	* That none of the hashes are prefixes of each other.
+//   - That each hash prefix is valid; that is, it has a length within
+//     minHashPrefixLength and maxHashPrefixLength.
+//   - That the list of prefixes is sorted.
+//   - That none of the hashes are prefixes of each other.
 func (p hashPrefixes) Validate() error {
 	var hp hashPrefix // Previous hash
 	for _, h := range p {
@@ -258,6 +258,7 @@ func decodeRiceIntegers(rice *pb.RiceDeltaEncoding) ([]uint32, error) {
 // least-significant bits coming first in the bit stream.
 //
 // For more information, see the following:
+//
 //	https://en.wikipedia.org/wiki/Golomb_coding
 type riceDecoder struct {
 	br *bitReader

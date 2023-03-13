@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,8 +29,9 @@ import (
 	"testing"
 	"time"
 
+	timepb "google.golang.org/protobuf/types/known/timestamppb"
+
 	pb "github.com/google/webrisk/internal/webrisk_proto"
-	pt "github.com/golang/protobuf/ptypes"
 )
 
 func mustGetTempFile(t *testing.T) string {
@@ -291,9 +292,9 @@ func TestDatabaseUpdate(t *testing.T) {
 		logger = log.New(ioutil.Discard, "", 0)
 	)
 
-	// Helper function to aid in the construction on responses.
-	newResp := func(td ThreatType, rtype int, dels []int32, adds []string, state string, chksum string) pb.ComputeThreatListDiffResponse {
-		resp := pb.ComputeThreatListDiffResponse{
+	// Helper function to aid in the construction of responses.
+	newResp := func(td ThreatType, rtype int, dels []int32, adds []string, state string, chksum string) *pb.ComputeThreatListDiffResponse {
+		resp := &pb.ComputeThreatListDiffResponse{
 			ResponseType:    pb.ComputeThreatListDiffResponse_ResponseType(rtype),
 			NewVersionToken: []byte(state),
 			Checksum:        &pb.ComputeThreatListDiffResponse_Checksum{Sha256: mustDecodeHex(t, chksum)},
@@ -325,11 +326,11 @@ func TestDatabaseUpdate(t *testing.T) {
 	mockNow := func() time.Time { return now }
 	config.now = mockNow
 
-	var resp pb.ComputeThreatListDiffResponse
+	var resp *pb.ComputeThreatListDiffResponse
 	var errResponse error
 	mockAPI := &mockAPI{
 		listUpdate: func(context.Context, pb.ThreatType, []byte, []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
-			return &resp, errResponse
+			return resp, errResponse
 		},
 	}
 
@@ -355,7 +356,7 @@ func TestDatabaseUpdate(t *testing.T) {
 	now = now.Add(time.Hour)
 	resp = newResp(ThreatTypeMalware, full, nil, []string{"aaaa", "0421e", "666666", "7777777", "88888888"},
 		"d1", "a3b93fac424834c2447e2dbe5db3ec8553519777523907ea310e207f556a7637")
-	ts, _ := pt.TimestampProto(time.Now().Add(2000 * time.Second))
+	ts := timepb.New(time.Now().Add(2000 * time.Second))
 	resp.RecommendedNextDiff = ts
 
 	delay, updated = db.Update(context.Background(), mockAPI)

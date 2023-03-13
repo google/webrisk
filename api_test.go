@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import (
 	"reflect"
 	"testing"
 
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
 )
 
 type mockAPI struct {
@@ -51,47 +51,46 @@ func TestNetAPI(t *testing.T) {
 	var gotResp, wantResp proto.Message
 	responseMisformatter := ""
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var p string
+		var p []byte
 		var err error
-		marshaler := jsonpb.Marshaler{}
 		for key, value := range r.URL.Query() {
-			if (key == "threat_type") {
-				if (len(value) == 0) {
+			if key == "threat_type" {
+				if len(value) == 0 {
 					t.Fatalf("missing value for key: %v", key)
 				}
 				gotReqThreatType = pb.ThreatType(pb.ThreatType_value[value[0]])
-			} else if (key == "constraints.supported_compressions") {
-				if (len(value) == 0) {
+			} else if key == "constraints.supported_compressions" {
+				if len(value) == 0 {
 					t.Fatalf("missing value for key: %v", key)
 				}
 				for _, comp := range value {
 					gotReqCompressionTypes = append(gotReqCompressionTypes,
 						pb.CompressionType(pb.CompressionType_value[comp]))
 				}
-			} else if (key == "hash_prefix") {
-				if (len(value) == 0) {
+			} else if key == "hash_prefix" {
+				if len(value) == 0 {
 					t.Fatalf("missing value for key: %v", key)
 				}
 				gotReqHashPrefix, err = base64.StdEncoding.DecodeString(value[0])
-				if (err != nil) {
+				if err != nil {
 					t.Fatalf("unexpected hash prefix decoding error for: %v", value[0])
 				}
-			} else if (key == "threat_types") {
-				if (len(value) == 0) {
+			} else if key == "threat_types" {
+				if len(value) == 0 {
 					t.Fatalf("missing value for key: %v", key)
 				}
 				for _, threat := range value {
 					gotReqThreatTypes = append(gotReqThreatTypes,
 						pb.ThreatType(pb.ThreatType_value[threat]))
 				}
-			} else if (key != "key") {
+			} else if key != "key" {
 				t.Fatalf("unexpected request param error for key: %v", key)
 			}
 		}
-		if p, err = marshaler.MarshalToString(wantResp); err != nil {
-			t.Fatalf("unexpected jsonpb MarshalToString error: %v", err)
+		if p, err = protojson.Marshal(wantResp); err != nil {
+			t.Fatalf("unexpected json MarshalToString error: %v", err)
 		}
-		if _, err := w.Write([]byte(responseMisformatter + p)); err != nil {
+		if _, err := w.Write([]byte(responseMisformatter + string(p))); err != nil {
 			t.Fatalf("unexpected ResponseWriter.Write error: %v", err)
 		}
 	}))
@@ -113,8 +112,8 @@ func TestNetAPI(t *testing.T) {
 			RawIndices: &pb.RawIndices{Indices: []int32{1, 2, 3}},
 		},
 	}
-	resp1, err := api.ListUpdate(context.Background(), wantReqThreatType, []byte {},
-	    wantReqCompressionTypes)
+	resp1, err := api.ListUpdate(context.Background(), wantReqThreatType, []byte{},
+		wantReqCompressionTypes)
 	gotResp = resp1
 	if err != nil {
 		t.Errorf("unexpected ListUpdate error: %v", err)
@@ -127,7 +126,7 @@ func TestNetAPI(t *testing.T) {
 		t.Errorf("mismatching ListUpdate requests for compression types:\ngot  %+v\nwant %+v",
 			gotReqCompressionTypes, wantReqCompressionTypes)
 	}
-	if !reflect.DeepEqual(gotResp, wantResp) {
+	if !proto.Equal(gotResp, wantResp) {
 		t.Errorf("mismatching ListUpdate responses:\ngot  %+v\nwant %+v", gotResp, wantResp)
 	}
 
@@ -151,7 +150,7 @@ func TestNetAPI(t *testing.T) {
 		t.Errorf("mismatching HashLookup requests for threat types:\ngot  %+v\nwant %+v",
 			gotReqThreatTypes, wantReqThreatTypes)
 	}
-	if !reflect.DeepEqual(gotResp, wantResp) {
+	if !proto.Equal(gotResp, wantResp) {
 		t.Errorf("mismatching HashLookup responses:\ngot  %+v\nwant %+v", gotResp, wantResp)
 	}
 

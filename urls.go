@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,14 +39,15 @@ import (
 	"errors"
 	"fmt"
 	"net"
+
+	"golang.org/x/net/idna"
+
 	"net/url"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
-
-	"golang.org/x/net/idna"
 )
 
 var (
@@ -142,6 +143,7 @@ func isUnicode(s string) bool {
 // split splits the string s around the delimiter c.
 //
 // Let string s be of the form:
+//
 //	"%s%s%s" % (t, c, u)
 //
 // Then split returns (t, u) if cutc is set, otherwise, it returns (t, c+u).
@@ -274,15 +276,15 @@ func parseHost(hostish string) (host string, err error) {
 			return "", err
 		}
 		// Then apply a to lower but only to ascii characters [a-z|A-Z].
-		var temp_host bytes.Buffer
+		var tempHost bytes.Buffer
 		for _, c := range []byte(host) {
-			if (c >= 0x41 && c <=0x5A) || (c >= 0x61 && c <= 0x7A) {
-				temp_host.WriteByte(byte(unicode.ToLower(rune(c))))
+			if (c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A) {
+				tempHost.WriteByte(byte(unicode.ToLower(rune(c))))
 			} else {
-				temp_host.WriteByte(c)
+				tempHost.WriteByte(c)
 			}
 		}
-		host = temp_host.String()
+		host = tempHost.String()
 
 		// Then escape the result.
 		host = escape(host)
@@ -391,6 +393,7 @@ func parseIPAddress(iphostname string) string {
 // is usable as an IP address.
 //
 // For example:
+//
 //	s:"01234",      n:2  =>  "2.156"
 //	s:"0x10203040", n:4  =>  "16.32.48.64"
 func canonicalNum(s string, n int) string {

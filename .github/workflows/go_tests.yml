@@ -1,0 +1,26 @@
+name: Go Test & Build
+
+on: [push]
+
+jobs:
+  go-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Install Dependencies
+        run: go install ./
+
+      - name: Run Go Tests
+        run: go test -v ./
+
+      - name: Build wrlookup
+        run: go build -v -o wrlookup ./cmd/wrlookup/main.go
+
+      - name: Build wrserver
+        run: go build -v -o wrserver ./cmd/wrserver/main.go

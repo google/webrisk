@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ func TestWebriskClient(t *testing.T) {
 		t.Skip()
 	}
 
-	sb, err := NewWebriskClient(Config{
+	sb, err := NewUpdateClient(Config{
 		APIKey:       apiKey,
 		ID:           "GoWebriskClientSystemTest",
 		DBPath:       "/tmp/webriskClient.db",

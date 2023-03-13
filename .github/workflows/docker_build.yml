@@ -1,0 +1,13 @@
+name: Docker build
+
+on: [push]
+
+jobs:
+  docker-build:
+    # we are using ubuntu as it ships with docker pre-installed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Our Dockerfile runs all of our Go Tests
+      - name: Build and Test Docker Image
+        run: docker build --tag wr-container .

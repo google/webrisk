@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ import (
 	"testing"
 	"time"
 
+	timepb "google.golang.org/protobuf/types/known/timestamppb"
+
 	pb "github.com/google/webrisk/internal/webrisk_proto"
-	pt "github.com/golang/protobuf/ptypes"
 )
 
 func TestCacheLookup(t *testing.T) {
@@ -164,8 +165,9 @@ func TestCacheLookup(t *testing.T) {
 func TestCacheUpdate(t *testing.T) {
 	now := time.Unix(1451436338, 951473000)
 	mockNow := func() time.Time { return now }
-	ts, _ := pt.TimestampProto(now.Add(1000 * time.Second))
-	tft, _ := pt.Timestamp(ts)
+
+	ts := timepb.New(now.Add(1000 * time.Second))
+	tft := ts.AsTime()
 
 	vectors := []struct {
 		req       *pb.SearchHashesRequest

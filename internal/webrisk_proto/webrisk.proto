@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC.
+// Copyright 2023 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 
 syntax = "proto3";
 
-package google.cloud.webrisk.v1;
+package google.cloud.webrisk.v1.container;
 
 import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/google/webrisk";
 
 // Describes an API diff request.
 message ComputeThreatListDiffRequest {
@@ -195,6 +197,10 @@ enum ThreatType {
 
   // Unwanted software targeting any platform.
   UNWANTED_SOFTWARE = 3;
+
+  // A list of extended coverage social engineering URIs targeting any
+  // platform.
+  SOCIAL_ENGINEERING_EXTENDED_COVERAGE = 4;
 }
 
 // The ways in which threat entry sets can be compressed.

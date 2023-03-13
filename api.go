@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,24 +22,24 @@ import (
 	"net/url"
 	"strings"
 
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/jsonpb"
 )
 
 const (
-	findHashPath    = "v1/hashes:search"
-	fetchUpdatePath = "v1/threatLists:computeDiff"
-	threatTypeString = "threat_type"
-	versionTokenString = "version_token"
+	findHashPath                = "v1/hashes:search"
+	fetchUpdatePath             = "v1/threatLists:computeDiff"
+	threatTypeString            = "threat_type"
+	versionTokenString          = "version_token"
 	supportedCompressionsString = "constraints.supported_compressions"
-	hashPrefixString = "hash_prefix"
-	threatTypesString = "threat_types"
+	hashPrefixString            = "hash_prefix"
+	threatTypesString           = "threat_types"
 )
 
 // The api interface specifies wrappers around the Web Risk API.
 type api interface {
-	ListUpdate(ctx context.Context, threat_type pb.ThreatType, version_token []byte,
+	ListUpdate(ctx context.Context, threatType pb.ThreatType, versionToken []byte,
 		compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error)
 	HashLookup(ctx context.Context, hashPrefix []byte,
 		threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error)
@@ -67,11 +67,11 @@ func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
 	httpClient := &http.Client{}
 
 	if proxy != "" {
-		proxyUrl, err := url.Parse(proxy)
+		proxyURL, err := url.Parse(proxy)
 		if err != nil {
 			return nil, err
 		}
-		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyURL)}}
 	}
 
 	q := u.Query()
@@ -84,6 +84,9 @@ func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
 // response body payload as resp.
 func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Message) error {
 	httpReq, err := http.NewRequest("GET", urlString, nil)
+	if err != nil {
+		return err
+	}
 	httpReq.Header.Add("Content-Type", "application/json")
 	httpReq.Header.Add("User-Agent", "Webrisk-Client/0.1.3")
 	httpReq = httpReq.WithContext(ctx)
@@ -99,7 +102,7 @@ func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Mes
 	if err != nil {
 		return err
 	}
-	return jsonpb.UnmarshalString(string(body), resp)
+	return protojson.Unmarshal(body, resp)
 }
 
 // ListUpdate issues a ComputeThreatListDiff API call and returns the response.
