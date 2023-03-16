@@ -67,6 +67,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -159,6 +160,13 @@ type Config struct {
 	// If zero value, it defaults to DefaultUpdatePeriod.
 	UpdatePeriod time.Duration
 
+	// ThreatListArg is an optional string that will be parsed into ThreatLists.
+	// It is expected that names will be an exact match and comma-separated.
+	// For Example: 'MALWARE,SOCIAL_ENGINEERING'.
+	// Will also accept 'ALL' and load all threat types.
+	// If empty, ThreatLists will be loaded instead.
+	ThreatListArg string
+
 	// ThreatLists determines which threat lists that UpdateClient should
 	// subscribe to. The threats reported by LookupURLs will only be ones that
 	// are specified by this list.
@@ -199,6 +207,26 @@ func (c *Config) setDefaults() bool {
 		c.compressionTypes = []pb.CompressionType{pb.CompressionType_RAW, pb.CompressionType_RICE}
 	}
 	return true
+}
+
+// parseThreatTypes accepts a string of named ThreatTypes and parses it into
+// an array of valid types. It is used to load command line arguments.
+func parseThreatTypes(args string) ([]ThreatType, error) {
+	if args == "" || args == "ALL" {
+		return DefaultThreatLists, nil
+	}
+	r := []ThreatType{}
+	for _, v := range strings.Split(args, ",") {
+		if v == "ALL" {
+			return DefaultThreatLists, nil
+		}
+		tt := ThreatType(pb.ThreatType_value[v])
+		if tt == ThreatTypeUnspecified {
+			return nil, errors.New("webrisk: unknown threat type: " + v)
+		}
+		r = append(r, tt)
+	}
+	return r, nil
 }
 
 func (c Config) copy() Config {
@@ -246,6 +274,17 @@ func NewUpdateClient(conf Config) (*UpdateClient, error) {
 	conf = conf.copy()
 	if !conf.setDefaults() {
 		return nil, errors.New("webrisk: invalid configuration")
+	}
+
+	// Parse threat types if args are passed.
+	if conf.ThreatListArg != "" {
+		var err error
+		var tl []ThreatType
+		tl, err = parseThreatTypes(conf.ThreatListArg)
+		if err != nil || len(tl) == 0 {
+			return nil, err
+		}
+		conf.ThreatLists = tl
 	}
 
 	// Create the SafeBrowsing object.

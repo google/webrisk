@@ -40,10 +40,11 @@ import (
 )
 
 var (
-	apiKeyFlag    = flag.String("apikey", "", "specify your Web Risk API key")
-	databaseFlag  = flag.String("db", "", "path to the Web Risk database. By default persistent storage is disabled (not recommended).")
-	serverURLFlag = flag.String("server", webrisk.DefaultServerURL, "Web Risk API server address.")
-	proxyFlag     = flag.String("proxy", "", "proxy to use to connect to the HTTP server")
+	apiKeyFlag      = flag.String("apikey", "", "specify your Web Risk API key")
+	databaseFlag    = flag.String("db", "", "path to the Web Risk database. By default persistent storage is disabled (not recommended).")
+	serverURLFlag   = flag.String("server", webrisk.DefaultServerURL, "Web Risk API server address.")
+	proxyFlag       = flag.String("proxy", "", "proxy to use to connect to the HTTP server")
+	threatTypesFlag = flag.String("threatTypes", "ALL", "threat types to check against")
 )
 
 const usage = `wrlookup: command-line tool to lookup URLs with Web Risk.
@@ -80,11 +81,12 @@ func main() {
 		os.Exit(codeInvalid)
 	}
 	sb, err := webrisk.NewUpdateClient(webrisk.Config{
-		APIKey:    *apiKeyFlag,
-		DBPath:    *databaseFlag,
-		Logger:    os.Stderr,
-		ServerURL: *serverURLFlag,
-		ProxyURL:  *proxyFlag,
+		APIKey:        *apiKeyFlag,
+		DBPath:        *databaseFlag,
+		Logger:        os.Stderr,
+		ServerURL:     *serverURLFlag,
+		ProxyURL:      *proxyFlag,
+		ThreatListArg: *threatTypesFlag,
 	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to initialize Web Risk client: ", err)

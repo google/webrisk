@@ -218,10 +218,11 @@ const (
 )
 
 var (
-	apiKeyFlag   = flag.String("apikey", os.Getenv("APIKEY"), "specify your Web Risk API key")
-	srvAddrFlag  = flag.String("srvaddr", "0.0.0.0:8080", "TCP network address the HTTP server should use")
-	proxyFlag    = flag.String("proxy", "", "proxy to use to connect to the HTTP server")
-	databaseFlag = flag.String("db", "", "path to the Web Risk database.")
+	apiKeyFlag      = flag.String("apikey", os.Getenv("APIKEY"), "specify your Web Risk API key")
+	srvAddrFlag     = flag.String("srvaddr", "0.0.0.0:8080", "TCP network address the HTTP server should use")
+	proxyFlag       = flag.String("proxy", "", "proxy to use to connect to the HTTP server")
+	databaseFlag    = flag.String("db", "", "path to the Web Risk database.")
+	threatTypesFlag = flag.String("threatTypes", "ALL", "threat types to check against")
 )
 
 var threatTemplate = map[webrisk.ThreatType]string{
@@ -452,10 +453,11 @@ func main() {
 		os.Exit(1)
 	}
 	conf := webrisk.Config{
-		APIKey:   *apiKeyFlag,
-		ProxyURL: *proxyFlag,
-		DBPath:   *databaseFlag,
-		Logger:   os.Stderr,
+		APIKey:        *apiKeyFlag,
+		ProxyURL:      *proxyFlag,
+		DBPath:        *databaseFlag,
+		ThreatListArg: *threatTypesFlag,
+		Logger:        os.Stderr,
 	}
 	sb, err := webrisk.NewUpdateClient(conf)
 	if err != nil {
