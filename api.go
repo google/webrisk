@@ -35,7 +35,7 @@ const (
 	supportedCompressionsString = "constraints.supported_compressions"
 	hashPrefixString            = "hash_prefix"
 	threatTypesString           = "threat_types"
-	userAgentString             = "Webrisk-Client/0.2.0"
+	userAgentString             = "Webrisk-Client/0.2.1"
 )
 
 // The api interface specifies wrappers around the Web Risk API.

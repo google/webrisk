@@ -12,6 +12,7 @@ COPY . .
 # development, consider commenting out these lines.
 RUN go vet -v
 RUN go test -v
+RUN go test -v ./cmd/... -args --hostname="http://0.0.0.0:8080"
 
 RUN CGO_ENABLED=0 go build -o /go/bin/wrserver cmd/wrserver/main.go
 

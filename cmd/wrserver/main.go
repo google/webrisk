@@ -188,15 +188,20 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -442,6 +447,66 @@ func serveRedirector(resp http.ResponseWriter, req *http.Request, sb *webrisk.Up
 	}
 }
 
+// newServer sets up handlers and an http server for status, findThreatMatches,
+// redirect endpoint, and content for the interstitial warning page.
+func newServer(wr *webrisk.UpdateClient, fs http.FileSystem) *http.Server {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc(statusPath, func(w http.ResponseWriter, r *http.Request) {
+		serveStatus(w, r, wr)
+	})
+	mux.HandleFunc(findThreatPath, func(w http.ResponseWriter, r *http.Request) {
+		serveLookups(w, r, wr)
+	})
+	mux.HandleFunc(redirectPath, func(w http.ResponseWriter, r *http.Request) {
+		serveRedirector(w, r, wr, fs)
+	})
+	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(fs)))
+
+	return &http.Server{
+		Addr:    *srvAddrFlag,
+		Handler: mux,
+	}
+}
+
+// runServer sets up a listener for interrupts, starts the passed HTTP server, and shuts down
+// gracefully on an interrupt signal. It returns an exit channel that can be used to trigger
+// cleanup and a server down channel that notifies the caller when the server is finished shutting
+// down.
+func runServer(srv *http.Server) (chan os.Signal, <-chan struct{}) {
+	// start listening for interrupts
+	exit := make(chan os.Signal, 1)
+	down := make(chan struct{})
+	
+	// runs shutdown and cleanup on an exit signal
+	go func() {
+		<-exit
+		fmt.Fprintln(os.Stdout, "\nStarting server shutdown...")
+
+		timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		srv.SetKeepAlivesEnabled(false)
+
+		if err := srv.Shutdown(timeout); err != nil {
+			log.Fatalf("Server error when shutting down: %s", err)
+		}
+		fmt.Fprintln(os.Stdout, "Server shutdown completed.")
+	}()
+
+	// runs our server until an exit signal is received
+	go func() {
+		fmt.Fprintln(os.Stdout, "Starting server at", srv.Addr)
+		// this blocks our main thread until an interrupt signal
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %s", err)
+		}
+		close(down)
+	}()
+
+	return exit, down
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, usage, os.Args[0])
@@ -459,7 +524,7 @@ func main() {
 		ThreatListArg: *threatTypesFlag,
 		Logger:        os.Stderr,
 	}
-	sb, err := webrisk.NewUpdateClient(conf)
+	wr, err := webrisk.NewUpdateClient(conf)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to initialize Web Risk client: ", err)
 		os.Exit(1)
@@ -470,21 +535,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	http.HandleFunc(statusPath, func(w http.ResponseWriter, r *http.Request) {
-		serveStatus(w, r, sb)
-	})
-	http.HandleFunc(findThreatPath, func(w http.ResponseWriter, r *http.Request) {
-		serveLookups(w, r, sb)
-	})
-	http.HandleFunc(redirectPath, func(w http.ResponseWriter, r *http.Request) {
-		serveRedirector(w, r, sb, statikFS)
-	})
-	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(statikFS)))
-
-	fmt.Fprintln(os.Stdout, "Starting server at", *srvAddrFlag)
-	if err := http.ListenAndServe(*srvAddrFlag, nil); err != nil {
-		fmt.Fprintln(os.Stderr, "Server error:", err)
-		return
-	}
-	fmt.Fprintln(os.Stdout, "Stopping server")
+	srv := newServer(wr, statikFS)
+	exit, down := runServer(srv)
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	<-down
+	fmt.Fprintln(os.Stdout, "wrserver exiting.")
 }
