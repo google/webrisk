@@ -37,8 +37,8 @@ To begin using Web Risk, you will need a [GCP](https://cloud.google.com/)
 Account and a project to work in.
 
 1. Enable the [Web Risk API](https://console.cloud.google.com/marketplace/product/google/webrisk.googleapis.com).
-
-2. [Create an API Key](https://console.cloud.google.com/apis/credentials).
+   
+2. [Create an API Key](https://console.cloud.google.com/apis/credentials) (optional, either authenticate using an API key, or through [application default credentials](https://cloud.google.com/docs/authentication/application-default-credentials)).
 
 3. [Enable Billing](https://console.cloud.google.com/billing) for your account
 and make sure it's linked to your project.
