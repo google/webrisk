@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"strings"
 
+	"google.golang.org/api/transport"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
@@ -66,6 +67,12 @@ func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
 	}
 
 	httpClient := &http.Client{}
+
+	if key == "" {
+		if adcClient, _, err := transport.NewHTTPClient(context.Background()); err == nil {
+			httpClient = adcClient
+		}
+	}
 
 	if proxy != "" {
 		proxyURL, err := url.Parse(proxy)
