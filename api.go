@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,15 +17,16 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"google.golang.org/api/option"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 
+	pb "github.com/google/webrisk/internal/webrisk_proto"
 	"google.golang.org/api/transport"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-	pb "github.com/google/webrisk/internal/webrisk_proto"
 )
 
 const (
@@ -57,7 +58,7 @@ type netAPI struct {
 // For every request, it will use the provided API key.
 // If a proxy URL is given, it will be used in place of the default $HTTP_PROXY.
 // If the protocol is not specified in root, then this defaults to using HTTPS.
-func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
+func newNetAPI(root string, key string, proxy string, transportOptions ...option.ClientOption) (*netAPI, error) {
 	if !strings.Contains(root, "://") {
 		root = "https://" + root
 	}
@@ -69,7 +70,7 @@ func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
 	httpClient := &http.Client{}
 
 	if key == "" {
-		if adcClient, _, err := transport.NewHTTPClient(context.Background()); err == nil {
+		if adcClient, _, err := transport.NewHTTPClient(context.Background(), transportOptions...); err == nil {
 			httpClient = adcClient
 		}
 	}

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -64,6 +64,7 @@ package webrisk
 import (
 	"context"
 	"errors"
+	"google.golang.org/api/option"
 	"io"
 	"io/ioutil"
 	"log"
@@ -181,6 +182,9 @@ type Config struct {
 	// If empty, no logs will be written.
 	Logger io.Writer
 
+	// TransportOptions are passed to the initialization function for the HTTP client.
+	TransportOptions []option.ClientOption
+
 	// compressionTypes indicates how the threat entry sets can be compressed.
 	compressionTypes []pb.CompressionType
 
@@ -290,7 +294,7 @@ func NewUpdateClient(conf Config) (*UpdateClient, error) {
 	// Create the SafeBrowsing object.
 	if conf.api == nil {
 		var err error
-		conf.api, err = newNetAPI(conf.ServerURL, conf.APIKey, conf.ProxyURL)
+		conf.api, err = newNetAPI(conf.ServerURL, conf.APIKey, conf.ProxyURL, conf.TransportOptions...)
 		if err != nil {
 			return nil, err
 		}
