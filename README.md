@@ -224,18 +224,15 @@ For testing the blocklists, you can use the following URLs:
 
 ## 4XX Errors
 
-If you start the client without proper credentials or project set up, you will
-see an error similar to what is shown below on startup:
+If you start the client without proper credentials or project set up, you will see an error similar to what is shown below on startup:
 
 ```
 webrisk: 2023/01/27 19:36:13 database.go:217: ListUpdate failure (1): webrisk: unexpected server response code: 400
 ```
 
-For 400 errors, this usually means the API key is incorrect or was not supplied
-correctly.
+For 400 errors, this usually means the API key is incorrect or was not supplied correctly.
 
-For 403 errors, this could mean the Web Risk API is not enabled for your project
-**or** your project does not have Billing enabled.
+For 403 errors, this could mean the Web Risk API is not enabled for your project **or** your project does not have Billing enabled.
 
 # About the Social Engineering Extended Coverage List
 

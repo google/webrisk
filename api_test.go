@@ -14,13 +14,19 @@
 package webrisk
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"errors"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
@@ -180,5 +186,69 @@ func TestNetAPI(t *testing.T) {
 	_, err = api.HashLookup(context.Background(), wantReqHashPrefix, wantReqThreatTypes)
 	if err == nil {
 		t.Errorf("unexpected HashLookup success, wanted malformed JSON error")
+	}
+}
+
+func createBody(j string) io.ReadCloser {
+	return ioutil.NopCloser(bytes.NewReader([]byte(j)))
+}
+
+func TestParseError(t *testing.T) {
+	tests := []struct {
+		httpResp *http.Response
+		wantErr  error
+	}{
+		{
+			httpResp: &http.Response{
+				StatusCode: http.StatusBadRequest,
+				Body: createBody(`{
+					"error": {
+						"code": 400,
+						"message": "API key not valid. Please pass a valid API key",
+						"status": "INVALID_ARGUMENT"}}`), // Formatted Response
+			},
+			wantErr: errors.New("webrisk: unexpected server response code: 400, status: INVALID_ARGUMENT, message: API key not valid. Please pass a valid API key"),
+		},
+		{
+			httpResp: &http.Response{
+				StatusCode: http.StatusForbidden,
+				Body: createBody(`{
+					"error": {
+						"code": 403,
+						"message": "API Not Enabled",
+						"status": "PERMISSION_DENIED",
+						"details": [{
+							"@type": "type.googleapis.com/google.rpc.ErrorInfo",
+							"reason": "PERMISSION_DENIED",
+							"domain": "googleapis.com",
+							"metadata": {
+								"service": "webrisk.googleapis.com"
+							}}]}}`), // Full Response
+			},
+			wantErr: errors.New("webrisk: unexpected server response code: 403, status: PERMISSION_DENIED, message: API Not Enabled"),
+		},
+		{
+			httpResp: &http.Response{
+				StatusCode: http.StatusServiceUnavailable,
+				Body:       createBody(""), // Empty body
+			},
+			wantErr: errors.New("webrisk: unknown error, response code: 503"),
+		},
+		{
+			httpResp: &http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Body:       createBody(`{badjson}`),
+			},
+			wantErr: errors.New("webrisk: unknown error, response code: 500"),
+		},
+	}
+
+	for _, tc := range tests {
+		var a netAPI
+		gotErr := a.parseError(tc.httpResp)
+
+		if cmp.Equal(tc.wantErr, gotErr, cmpopts.EquateErrors()) {
+			t.Errorf("parseError(%v) returned error: %v, want error: %v", tc.httpResp, gotErr, tc.wantErr)
+		}
 	}
 }

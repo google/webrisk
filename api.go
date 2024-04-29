@@ -24,6 +24,7 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	err_pb "github.com/google/webrisk/internal/http_error_proto"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
 )
 
@@ -97,13 +98,28 @@ func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Mes
 	}
 	defer httpResp.Body.Close()
 	if httpResp.StatusCode != 200 {
-		return fmt.Errorf("webrisk: unexpected server response code: %d", httpResp.StatusCode)
+		return a.parseError(httpResp)
 	}
 	body, err := ioutil.ReadAll(httpResp.Body)
 	if err != nil {
 		return err
 	}
 	return protojson.Unmarshal(body, resp)
+}
+
+// parseError parses an error JSON body and returns an error summary.
+func (a *netAPI) parseError(httpResp *http.Response) error {
+	body, err := ioutil.ReadAll(httpResp.Body)
+	if err != nil {
+		return err
+	}
+	ep := new(err_pb.Error)
+	o := protojson.UnmarshalOptions{DiscardUnknown: true, AllowPartial: true}
+	if err := o.Unmarshal(body, ep); err != nil {
+		return fmt.Errorf("webrisk: unknown error, response code: %d", httpResp.StatusCode)
+	}
+	return fmt.Errorf("webrisk: unexpected server response code: %d, status: %s, message: %s",
+		httpResp.StatusCode, ep.GetError().GetStatus(), ep.GetError().GetMessage())
 }
 
 // ListUpdate issues a ComputeThreatListDiff API call and returns the response.
