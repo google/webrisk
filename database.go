@@ -200,7 +200,10 @@ func (db *database) Update(ctx context.Context, api api) (time.Duration, bool) {
 		s = append(s, &pb.ComputeThreatListDiffRequest{
 			ThreatType: pb.ThreatType(td),
 			Constraints: &pb.ComputeThreatListDiffRequest_Constraints{
-				SupportedCompressions: db.config.compressionTypes},
+				SupportedCompressions: db.config.compressionTypes,
+				MaxDiffEntries:        db.config.MaxDiffEntries,
+				MaxDatabaseEntries:    db.config.MaxDatabaseEntries,
+			},
 			VersionToken: state,
 		})
 	}

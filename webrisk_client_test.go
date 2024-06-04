@@ -65,3 +65,50 @@ func TestParseThreatTypes(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateMaxEntries(t *testing.T) {
+	tests := []struct {
+		n       int32
+		wantErr error
+	}{
+		{
+			n:       0,
+			wantErr: nil,
+		},
+		{
+			n:       1024,
+			wantErr: nil,
+		},
+		{
+			n:       4096,
+			wantErr: nil,
+		},
+		{
+			n:       1048576,
+			wantErr: nil,
+		},
+		{
+			n:       -1024,
+			wantErr: errMaxEntries,
+		},
+		{
+			n:       100,
+			wantErr: errMaxEntries,
+		},
+		{
+			n:       1026,
+			wantErr: errMaxEntries,
+		},
+		{
+			n:       2097152,
+			wantErr: errMaxEntries,
+		},
+	}
+
+	for _, tc := range tests {
+		gotErr := validateMaxEntries(tc.n)
+		if gotErr != tc.wantErr {
+			t.Errorf("validateMaxEntries(%d) = %v, want %v", tc.n, gotErr, tc.wantErr)
+		}
+	}
+}
