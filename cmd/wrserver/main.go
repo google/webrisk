@@ -223,11 +223,13 @@ const (
 )
 
 var (
-	apiKeyFlag      = flag.String("apikey", os.Getenv("APIKEY"), "specify your Web Risk API key")
-	srvAddrFlag     = flag.String("srvaddr", "0.0.0.0:8080", "TCP network address the HTTP server should use")
-	proxyFlag       = flag.String("proxy", "", "proxy to use to connect to the HTTP server")
-	databaseFlag    = flag.String("db", "", "path to the Web Risk database.")
-	threatTypesFlag = flag.String("threatTypes", "ALL", "threat types to check against")
+	apiKeyFlag             = flag.String("apikey", os.Getenv("APIKEY"), "specify your Web Risk API key")
+	srvAddrFlag            = flag.String("srvaddr", "0.0.0.0:8080", "TCP network address the HTTP server should use")
+	proxyFlag              = flag.String("proxy", "", "proxy to use to connect to the HTTP server")
+	databaseFlag           = flag.String("db", "", "path to the Web Risk database.")
+	threatTypesFlag        = flag.String("threatTypes", "ALL", "threat types to check against")
+	maxDiffEntriesFlag     = flag.Int("maxDiffEntries", 0, "maximum number of diff entries to return from a ComputeThreatListDiff request")
+	maxDatabaseEntriesFlag = flag.Int("maxDatabaseEntries", 0, "maximum number of database entries to be stored in the local database")
 )
 
 var threatTemplate = map[webrisk.ThreatType]string{
@@ -477,7 +479,7 @@ func runServer(srv *http.Server) (chan os.Signal, <-chan struct{}) {
 	// start listening for interrupts
 	exit := make(chan os.Signal, 1)
 	down := make(chan struct{})
-	
+
 	// runs shutdown and cleanup on an exit signal
 	go func() {
 		<-exit
@@ -518,11 +520,13 @@ func main() {
 		os.Exit(1)
 	}
 	conf := webrisk.Config{
-		APIKey:        *apiKeyFlag,
-		ProxyURL:      *proxyFlag,
-		DBPath:        *databaseFlag,
-		ThreatListArg: *threatTypesFlag,
-		Logger:        os.Stderr,
+		APIKey:             *apiKeyFlag,
+		ProxyURL:           *proxyFlag,
+		DBPath:             *databaseFlag,
+		ThreatListArg:      *threatTypesFlag,
+		MaxDiffEntries:     int32(*maxDiffEntriesFlag),
+		MaxDatabaseEntries: int32(*maxDatabaseEntriesFlag),
+		Logger:             os.Stderr,
 	}
 	wr, err := webrisk.NewUpdateClient(conf)
 	if err != nil {
