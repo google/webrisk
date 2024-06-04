@@ -234,6 +234,29 @@ For 400 errors, this usually means the API key is incorrect or was not supplied 
 
 For 403 errors, this could mean the Web Risk API is not enabled for your project **or** your project does not have Billing enabled.
 
+# Configuration
+
+Both `wrserver` (used by `docker run`) and `wrlookup` support several command line flags.
+
+- `apikey` (required) -- Used to Authenticate requests with the Web Risk API.
+The API itself must also be enabled on the same project & be linked to a Billing account.
+
+- `threatTypes` (optional) -- A comma-separated lists of different blocklists to load and check URLs against.
+Available options include `MALWARE`,`UNWANTED_SOFTWARE`,`SOCIAL_ENGINEERING`,
+`SOCIAL_ENGINEERING_EXTENDED_COVERAGE`. This arg will also accept `ALL` which is
+the default behavior.
+
+- `maxDiffEntries` (optional) -- An int32 value that will set the max number of hash prefixes
+returned in a single diff request. This can be used in resource-bound environments to control
+bandwidth usage. The default value of 0 will result in this limit being ignored. Otherwise, this
+must be set to a positive integer which must be a power of 2 between 2 ^ 10 and 2 ^ 20.
+
+- `maxDatabaseEntries` (optional) -- An in32 value that will set the upper boundary has prefixes
+to be returned from the API and stored locally. This can be used to limit the number of hash
+prefixes to be searched against. The default value of 0 will result in this limit being ignored. Otherwise, this
+must be set to a positive integer which must be a power of 2 between 2 ^ 10 and 2 ^ 20. *Note*: Setting this limit
+will decrease blocklist coverage.
+
 # About the Social Engineering Extended Coverage List
 
 This is a newer blocklist that includes a greater range of risky URLs that
