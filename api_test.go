@@ -39,9 +39,8 @@ type mockAPI struct {
 		threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error)
 }
 
-func (m *mockAPI) ListUpdate(ctx context.Context, threatType pb.ThreatType, versionToken []byte,
-	compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
-	return m.listUpdate(ctx, threatType, versionToken, compressionTypes)
+func (m *mockAPI) ListUpdate(ctx context.Context, req *pb.ComputeThreatListDiffRequest) (*pb.ComputeThreatListDiffResponse, error) {
+	return m.listUpdate(ctx, req.GetThreatType(), req.GetVersionToken(), req.GetConstraints().GetSupportedCompressions())
 }
 
 func (m *mockAPI) HashLookup(ctx context.Context, hashPrefix []byte,
@@ -118,8 +117,14 @@ func TestNetAPI(t *testing.T) {
 			RawIndices: &pb.RawIndices{Indices: []int32{1, 2, 3}},
 		},
 	}
-	resp1, err := api.ListUpdate(context.Background(), wantReqThreatType, []byte{},
-		wantReqCompressionTypes)
+	req := &pb.ComputeThreatListDiffRequest{
+		ThreatType: wantReqThreatType,
+		Constraints: &pb.ComputeThreatListDiffRequest_Constraints{
+			SupportedCompressions: wantReqCompressionTypes,
+		},
+		VersionToken: []byte{},
+	}
+	resp1, err := api.ListUpdate(context.Background(), req)
 	gotResp = resp1
 	if err != nil {
 		t.Errorf("unexpected ListUpdate error: %v", err)

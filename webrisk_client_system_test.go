@@ -42,8 +42,7 @@ func TestNetworkAPIUpdate(t *testing.T) {
 		ThreatType: pb.ThreatType_MALWARE,
 	}
 
-	dat, err := nm.ListUpdate(context.Background(), req.ThreatType,
-		req.VersionToken, []pb.CompressionType{})
+	dat, err := nm.ListUpdate(context.Background(), req)
 	if err != nil {
 		t.Fatal(err)
 	}

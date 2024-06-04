@@ -41,8 +41,7 @@ const (
 
 // The api interface specifies wrappers around the Web Risk API.
 type api interface {
-	ListUpdate(ctx context.Context, threatType pb.ThreatType, versionToken []byte,
-		compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error)
+	ListUpdate(ctx context.Context, req *pb.ComputeThreatListDiffRequest) (*pb.ComputeThreatListDiffResponse, error)
 	HashLookup(ctx context.Context, hashPrefix []byte,
 		threatTypes []pb.ThreatType) (*pb.SearchHashesResponse, error)
 }
@@ -123,17 +122,16 @@ func (a *netAPI) parseError(httpResp *http.Response) error {
 }
 
 // ListUpdate issues a ComputeThreatListDiff API call and returns the response.
-func (a *netAPI) ListUpdate(ctx context.Context, threatType pb.ThreatType, versionToken []byte,
-	compressionTypes []pb.CompressionType) (*pb.ComputeThreatListDiffResponse, error) {
+func (a *netAPI) ListUpdate(ctx context.Context, req *pb.ComputeThreatListDiffRequest) (*pb.ComputeThreatListDiffResponse, error) {
 	resp := new(pb.ComputeThreatListDiffResponse)
 	u := *a.url // Make a copy of URL
 	// Add fields from ComputeThreatListDiffRequest to URL request
 	q := u.Query()
-	q.Set(threatTypeString, threatType.String())
-	if len(versionToken) != 0 {
-		q.Set(versionTokenString, base64.StdEncoding.EncodeToString(versionToken))
+	q.Set(threatTypeString, req.GetThreatType().String())
+	if len(req.GetVersionToken()) != 0 {
+		q.Set(versionTokenString, base64.StdEncoding.EncodeToString(req.GetVersionToken()))
 	}
-	for _, compressionType := range compressionTypes {
+	for _, compressionType := range req.GetConstraints().GetSupportedCompressions() {
 		q.Add(supportedCompressionsString, compressionType.String())
 	}
 	u.RawQuery = q.Encode()
