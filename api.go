@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
@@ -34,9 +35,11 @@ const (
 	threatTypeString            = "threat_type"
 	versionTokenString          = "version_token"
 	supportedCompressionsString = "constraints.supported_compressions"
+	maxDiffEntriesKey           = "constraints.max_diff_entries"
+	maxDatabaseEntriesKey       = "constraints.max_database_entries"
 	hashPrefixString            = "hash_prefix"
 	threatTypesString           = "threat_types"
-	userAgentString             = "Webrisk-Client/0.2.1"
+	userAgentString             = "Webrisk-Client/0.2.2"
 )
 
 // The api interface specifies wrappers around the Web Risk API.
@@ -130,6 +133,12 @@ func (a *netAPI) ListUpdate(ctx context.Context, req *pb.ComputeThreatListDiffRe
 	q.Set(threatTypeString, req.GetThreatType().String())
 	if len(req.GetVersionToken()) != 0 {
 		q.Set(versionTokenString, base64.StdEncoding.EncodeToString(req.GetVersionToken()))
+	}
+	if req.GetConstraints().GetMaxDiffEntries() != 0 {
+		q.Add(maxDiffEntriesKey, strconv.FormatInt(int64(req.GetConstraints().GetMaxDiffEntries()), 10))
+	}
+	if req.GetConstraints().GetMaxDatabaseEntries() != 0 {
+		q.Add(maxDatabaseEntriesKey, strconv.FormatInt(int64(req.GetConstraints().GetMaxDatabaseEntries()), 10))
 	}
 	for _, compressionType := range req.GetConstraints().GetSupportedCompressions() {
 		q.Add(supportedCompressionsString, compressionType.String())

@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -54,6 +55,8 @@ func TestNetAPI(t *testing.T) {
 	var gotReqHashPrefix, wantReqHashPrefix []byte
 	var gotReqThreatTypes, wantReqThreatTypes []pb.ThreatType
 	var gotResp, wantResp proto.Message
+	var gotMaxDiffEntries, wantMaxDiffEntries []int32
+	var gotMaxDatabaseEntries, wantMaxDatabaseEntries []int32
 	responseMisformatter := ""
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var p []byte
@@ -88,15 +91,33 @@ func TestNetAPI(t *testing.T) {
 					gotReqThreatTypes = append(gotReqThreatTypes,
 						pb.ThreatType(pb.ThreatType_value[threat]))
 				}
+			} else if key == maxDiffEntriesKey {
+				if len(value) == 0 {
+					t.Fatalf("Missing value for key %v", key)
+				}
+				i, err := strconv.ParseInt(value[0], 10, 32)
+				if err != nil {
+					t.Fatalf("Error parsing %q: %v", value[0], err)
+				}
+				gotMaxDiffEntries = append(gotMaxDiffEntries, int32(i))
+			} else if key == maxDatabaseEntriesKey {
+				if len(value) == 0 {
+					t.Fatalf("Missing value for key %v", key)
+				}
+				i, err := strconv.ParseInt(value[0], 10, 32)
+				if err != nil {
+					t.Fatalf("Error parsing %q: %v", value[0], err)
+				}
+				gotMaxDatabaseEntries = append(gotMaxDatabaseEntries, int32(i))
 			} else if key != "key" {
-				t.Fatalf("unexpected request param error for key: %v", key)
+				t.Fatalf("Unexpected request param error for key: %v", key)
 			}
 		}
 		if p, err = protojson.Marshal(wantResp); err != nil {
-			t.Fatalf("unexpected json MarshalToString error: %v", err)
+			t.Fatalf("Unexpected json MarshalToString error: %v", err)
 		}
 		if _, err := w.Write([]byte(responseMisformatter + string(p))); err != nil {
-			t.Fatalf("unexpected ResponseWriter.Write error: %v", err)
+			t.Fatalf("Unexpected ResponseWriter.Write error: %v", err)
 		}
 	}))
 	defer ts.Close()
@@ -109,6 +130,8 @@ func TestNetAPI(t *testing.T) {
 	// Test that ListUpdate marshal/unmarshal works.
 	wantReqThreatType = pb.ThreatType_MALWARE
 	wantReqCompressionTypes = []pb.CompressionType{0, 1, 2}
+	wantMaxDiffEntries = []int32{1024}
+	wantMaxDatabaseEntries = []int32{1024}
 
 	wantResp = &pb.ComputeThreatListDiffResponse{
 		ResponseType: 1,
@@ -121,6 +144,8 @@ func TestNetAPI(t *testing.T) {
 		ThreatType: wantReqThreatType,
 		Constraints: &pb.ComputeThreatListDiffRequest_Constraints{
 			SupportedCompressions: wantReqCompressionTypes,
+			MaxDiffEntries:        1024,
+			MaxDatabaseEntries:    1024,
 		},
 		VersionToken: []byte{},
 	}
@@ -139,6 +164,14 @@ func TestNetAPI(t *testing.T) {
 	}
 	if !proto.Equal(gotResp, wantResp) {
 		t.Errorf("mismatching ListUpdate responses:\ngot  %+v\nwant %+v", gotResp, wantResp)
+	}
+	if !reflect.DeepEqual(gotMaxDiffEntries, wantMaxDiffEntries) {
+		t.Errorf("mismatching ListUpdate max diff entries:\ngot  %+v\nwant %+v",
+			gotMaxDiffEntries, wantMaxDiffEntries)
+	}
+	if !reflect.DeepEqual(gotMaxDatabaseEntries, wantMaxDatabaseEntries) {
+		t.Errorf("mismatching ListUpdate max database entries:\ngot  %+v\nwant %+v",
+			gotMaxDatabaseEntries, wantMaxDatabaseEntries)
 	}
 
 	// Test that HashLookup marshal/unmarshal works.
