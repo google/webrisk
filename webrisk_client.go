@@ -54,7 +54,7 @@
 // If we are unsure about the query, we check the local cache, which can be used
 // to satisfy queries immediately if the same query had been made recently.
 // The cache will tell us that the query is either safe, unsafe, or unknown
-// (because the it's not in the cache or the entry expired).
+// (because it's not in the cache or the entry expired).
 //
 // If we are still unsure about the query, then we finally query the API server,
 // which is guaranteed to return to us an authoritative answer, assuming no
