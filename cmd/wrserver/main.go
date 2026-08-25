@@ -189,11 +189,13 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -205,11 +207,12 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-	"github.com/rakyll/statik/fs"
-	_ "github.com/google/webrisk/cmd/wrserver/statik"
 	pb "github.com/google/webrisk/internal/webrisk_proto"
 	"github.com/google/webrisk"
 )
+
+//go:embed public/*
+var embedFS embed.FS
 
 const (
 	statusPath     = "/status"
@@ -533,13 +536,13 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Unable to initialize Web Risk client: ", err)
 		os.Exit(1)
 	}
-	statikFS, err := fs.New()
+	publicFS, err := fs.Sub(embedFS, "public")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to initialize static files: ", err)
 		os.Exit(1)
 	}
 
-	srv := newServer(wr, statikFS)
+	srv := newServer(wr, http.FS(publicFS))
 	exit, down := runServer(srv)
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	<-down
