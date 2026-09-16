@@ -39,7 +39,7 @@ const (
 	maxDatabaseEntriesKey       = "constraints.max_database_entries"
 	hashPrefixString            = "hash_prefix"
 	threatTypesString           = "threat_types"
-	userAgentString             = "Webrisk-Client/0.2.2"
+	userAgentString             = "Webrisk-Client/0.2.3"
 )
 
 // The api interface specifies wrappers around the Web Risk API.
