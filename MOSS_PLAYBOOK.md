@@ -63,6 +63,13 @@ Because of internal `google3/...` import paths in Piper, **you cannot run `go ge
     *This tag is required by a presubmit check to confirm you have followed this playbook and verified the updates.*
 
 ---
+## Go Version Updates
+
+These will also need to be updated in the `Dockerfile` &
+`.github/workflows/go_tests.yml`.
+
+Example: http://cl/1008251398
+
 
 ## Detailed Development Workflow
 For a complete guide on developing and making non-dependency changes to the container app, see [DEVELOPMENT.md](http://google3/third_party/webrisk/DEVELOPMENT.md).
