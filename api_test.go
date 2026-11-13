@@ -22,8 +22,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -211,6 +213,8 @@ func TestNetAPI(t *testing.T) {
 	_, err = api.HashLookup(ctx, wantReqHashPrefix, wantReqThreatTypes)
 	if err == nil {
 		t.Errorf("unexpected HashLookup success, wanted HTTP request canceled")
+	} else if strings.Contains(err.Error(), "fizzbuzz") || strings.Contains(err.Error(), "key=") {
+		t.Errorf("HashLookup error %q leaked API key", err.Error())
 	}
 
 	// Test misformatted HashLookup response returns an error.
@@ -288,5 +292,101 @@ func TestParseError(t *testing.T) {
 		if cmp.Equal(tc.wantErr, gotErr, cmpopts.EquateErrors()) {
 			t.Errorf("parseError(%v) returned error: %v, want error: %v", tc.httpResp, gotErr, tc.wantErr)
 		}
+	}
+}
+
+func TestRedactedTransportError(t *testing.T) {
+	const secretKey = "SECRET_API_KEY_CANARY"
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	tsURL := ts.URL
+	ts.Close()
+
+	api, err := newNetAPI(tsURL, secretKey, "")
+	if err != nil {
+		t.Fatalf("newNetAPI(%q) unexpected error: %v", tsURL, err)
+	}
+
+	req := &pb.ComputeThreatListDiffRequest{
+		ThreatType: pb.ThreatType_MALWARE,
+	}
+
+	t.Run("list_update_unreachable_server", func(t *testing.T) {
+		_, err := api.ListUpdate(context.Background(), req)
+		if err == nil {
+			t.Fatalf("ListUpdate() = nil, want transport error")
+		}
+		got := err.Error()
+		if !strings.Contains(got, api.url.Host) {
+			t.Errorf("ListUpdate() error = %q, want host %q", got, api.url.Host)
+		}
+		if strings.Contains(got, secretKey) || strings.Contains(got, "key=") {
+			t.Errorf("ListUpdate() error = %q, leaked API key", got)
+		}
+	})
+
+	t.Run("hash_lookup_canceled_context", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		_, err := api.HashLookup(ctx, []byte("aaaa"), []pb.ThreatType{pb.ThreatType_MALWARE})
+		if err == nil {
+			t.Fatalf("HashLookup() = nil, want context canceled error")
+		}
+		got := err.Error()
+		if !strings.Contains(got, api.url.Host) {
+			t.Errorf("HashLookup() error = %q, want host %q", got, api.url.Host)
+		}
+		if !strings.Contains(got, context.Canceled.Error()) {
+			t.Errorf("HashLookup() error = %q, want %q", got, context.Canceled.Error())
+		}
+		if strings.Contains(got, secretKey) || strings.Contains(got, "key=") {
+			t.Errorf("HashLookup() error = %q, leaked API key", got)
+		}
+	})
+
+	tests := []struct {
+		name string
+		api  *netAPI
+		in   error
+		want string
+	}{
+		{
+			name: "url_error_with_host",
+			api:  &netAPI{url: &url.URL{Host: "webrisk.googleapis.com"}},
+			in: &url.Error{
+				Op:  "Get",
+				URL: "https://webrisk.googleapis.com/v1/threatLists:computeDiff?key=" + secretKey,
+				Err: errors.New("dial tcp: i/o timeout"),
+			},
+			want: `webrisk: Get "webrisk.googleapis.com": dial tcp: i/o timeout`,
+		},
+		{
+			name: "non_url_error_with_host",
+			api:  &netAPI{url: &url.URL{Host: "webrisk.googleapis.com"}},
+			in:   errors.New("custom transport failure"),
+			want: `webrisk: request to "webrisk.googleapis.com" failed: custom transport failure`,
+		},
+		{
+			name: "url_error_without_host",
+			api:  &netAPI{},
+			in: &url.Error{
+				Op:  "Get",
+				URL: "https://webrisk.googleapis.com/v1/hashes:search?key=" + secretKey,
+				Err: context.Canceled,
+			},
+			want: `webrisk: Get "": context canceled`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.api.redactedTransportError(tc.in).Error()
+			if got != tc.want {
+				t.Errorf("redactedTransportError(%v) = %q, want %q", tc.in, got, tc.want)
+			}
+			if strings.Contains(got, secretKey) || strings.Contains(got, "key=") {
+				t.Errorf("redactedTransportError(%v) = %q, leaked API key", tc.in, got)
+			}
+		})
 	}
 }
