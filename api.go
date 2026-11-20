@@ -89,14 +89,14 @@ func newNetAPI(root string, key string, proxy string) (*netAPI, error) {
 func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Message) error {
 	httpReq, err := http.NewRequest("GET", urlString, nil)
 	if err != nil {
-		return err
+		return a.redactedTransportError(err)
 	}
 	httpReq.Header.Add("Content-Type", "application/json")
 	httpReq.Header.Add("User-Agent", userAgentString)
 	httpReq = httpReq.WithContext(ctx)
 	httpResp, err := a.client.Do(httpReq)
 	if err != nil {
-		return err
+		return a.redactedTransportError(err)
 	}
 	defer httpResp.Body.Close()
 	if httpResp.StatusCode != 200 {
@@ -107,6 +107,20 @@ func (a *netAPI) doRequest(ctx context.Context, urlString string, resp proto.Mes
 		return err
 	}
 	return protojson.Unmarshal(body, resp)
+}
+
+// redactedTransportError strips the request URL (which contains the API key in
+// its query string) from transport-layer errors while preserving the HTTP
+// operation, target host, and underlying cause.
+func (a *netAPI) redactedTransportError(err error) error {
+	host := ""
+	if a.url != nil {
+		host = a.url.Host
+	}
+	if ue, ok := err.(*url.Error); ok {
+		return fmt.Errorf("webrisk: %s %q: %v", ue.Op, host, ue.Err)
+	}
+	return fmt.Errorf("webrisk: request to %q failed: %v", host, err)
 }
 
 // parseError parses an error JSON body and returns an error summary.
