@@ -292,6 +292,33 @@ func parseHost(hostish string) (host string, err error) {
 	return host, nil
 }
 
+// stripUserinfo removes any userinfo component from the raw URL authority
+// before percent normalization, since Web Risk canonicalization discards
+// userinfo and RFC 3986 parses authority delimiters before percent-decoding.
+// It returns an error if a non-empty scheme is not followed by "//".
+func stripUserinfo(rawURL string) (string, error) {
+	scheme, afterScheme := getScheme(rawURL)
+	if scheme != "" && !strings.HasPrefix(afterScheme, "//") {
+		return "", errors.New("webrisk: invalid path")
+	}
+	auth, prefix := afterScheme, ""
+	if strings.HasPrefix(afterScheme, "//") {
+		auth, prefix = afterScheme[2:], "//"
+	}
+	end := strings.IndexAny(auth, "/?")
+	if end < 0 {
+		end = len(auth)
+	}
+	at := strings.LastIndex(auth[:end], "@")
+	if at < 0 {
+		return rawURL, nil
+	}
+	if scheme != "" {
+		return scheme + ":" + prefix + auth[at+1:], nil
+	}
+	return prefix + auth[at+1:], nil
+}
+
 // parseURL parses urlStr as a url.URL and reports an error if not possible.
 func parseURL(urlStr string) (parsedURL *url.URL, err error) {
 	// For legacy reasons, this is a simplified version of the net/url logic.
@@ -316,6 +343,10 @@ func parseURL(urlStr string) (parsedURL *url.URL, err error) {
 	rest = strings.Replace(rest, "\t", "", -1)
 	rest = strings.Replace(rest, "\r", "", -1)
 	rest = strings.Replace(rest, "\n", "", -1)
+	rest, err = stripUserinfo(rest)
+	if err != nil {
+		return nil, err
+	}
 	rest, err = normalizeEscape(rest)
 	if err != nil {
 		return nil, err
